@@ -1,3 +1,5 @@
+require 'mailchimp'
+
 module Courses
   # Adds a list of new students to a course.
   class AddStudentsService
@@ -16,7 +18,8 @@ module Courses
 
       Course.transaction do
         students = new_students.map do |student_data|
-          create_new_student(student_data)
+          student = create_new_student(student_data)
+          Mailchimp.add_contact(student.user.email, student.user.name)
         end
 
         notify_students(students)
