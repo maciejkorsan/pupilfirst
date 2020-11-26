@@ -263,7 +263,7 @@ let make = (~targetGroup, ~currentLevelId, ~levels, ~updateTargetGroupsCB, ~hide
                 <label className="block tracking-wide text-xs font-semibold" htmlFor="description">
                   {t("description") |> str}
                 </label>
-                <MarkdownEditor
+                <WysiwygMarkdownEditor
                   tabIndex=2
                   textareaId="description"
                   onChange={markdown => send(UpdateDescription(markdown))}

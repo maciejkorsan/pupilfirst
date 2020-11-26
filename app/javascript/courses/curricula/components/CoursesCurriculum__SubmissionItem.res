@@ -98,7 +98,7 @@ let updateLongText = (updateResultCB, value) => updateResultCB(ChecklistItem.Lon
 
 let showLongText = (value, id, updateResultCB) =>
   <div>
-    <MarkdownEditor
+    <WysiwygMarkdownEditor
       textareaId=id
       onChange={updateLongText(updateResultCB)}
       value

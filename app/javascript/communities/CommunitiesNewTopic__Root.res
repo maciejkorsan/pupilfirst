@@ -345,7 +345,7 @@ let make = (~communityId, ~target, ~topicCategories) => {
                 {"Body" |> str}
               </label>
               <div className="w-full flex flex-col">
-                <MarkdownEditor
+                <WysiwygMarkdownEditor
                   tabIndex=2
                   textareaId="body"
                   onChange={markdown => send(UpdateBody(markdown))}

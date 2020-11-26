@@ -459,7 +459,7 @@ let noteForm = (overlaySubmission, teamSubmission, note, send) =>
       {switch note {
       | Some(note) =>
         <div className="ml-6 md:ml-7 mt-2">
-          <MarkdownEditor
+          <WysiwygMarkdownEditor
             maxLength=10000
             textareaId
             value=note

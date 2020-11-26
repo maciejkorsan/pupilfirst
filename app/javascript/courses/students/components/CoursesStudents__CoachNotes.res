@@ -64,7 +64,7 @@ let make = (~studentId, ~coachNotes, ~hasArchivedNotes, ~addNoteCB, ~removeNoteC
       {"Add a New Note" |> str}
     </label>
     <DisablingCover disabled=state.saving message="Saving...">
-      <MarkdownEditor
+      <WysiwygMarkdownEditor
         textareaId="course-students__coach-notes-new-note"
         onChange={updateCoachNoteCB(setState)}
         value=state.newNote

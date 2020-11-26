@@ -67,7 +67,7 @@ let make = (
       </div>
     </div>
     <div className="my-2 bg-white">
-      <MarkdownEditor
+      <WysiwygMarkdownEditor
         textareaId=questionId
         placeholder="Type the question here (supports markdown)"
         value={quizQuestion |> CurriculumEditor__QuizQuestion.question}

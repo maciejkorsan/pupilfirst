@@ -230,7 +230,7 @@ let make = (
             </div>
           )}
           <div>
-            <MarkdownEditor
+            <WysiwygMarkdownEditor
               placeholder="Type in your reply. You can use Markdown to format your response."
               textareaId="new-reply"
               onChange=updateMarkdownCB

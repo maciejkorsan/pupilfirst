@@ -358,7 +358,7 @@ let make = (~course, ~hideEditorActionCB, ~updateCourseCB) => {
                   {"About" |> str}
                 </label>
                 <div className="mt-2">
-                  <MarkdownEditor
+                  <WysiwygMarkdownEditor
                     textareaId="course-about"
                     onChange={updateAboutCB(send)}
                     value=state.about

@@ -7,7 +7,7 @@ let onChange = (contentBlock, updateContentBlockCB, value) => {
 
 @react.component
 let make = (~markdown, ~contentBlock, ~updateContentBlockCB) =>
-  <MarkdownEditor
+  <WysiwygMarkdownEditor
     value=markdown
     profile=Markdown.Permissive
     maxLength=10000

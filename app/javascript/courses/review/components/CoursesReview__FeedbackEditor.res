@@ -43,7 +43,7 @@ let make = (
         <span className="ml-2 md:ml-3 tracking-wide"> {label |> str} </span>
       </h5>
       <div className="mt-2 md:ml-7" ariaLabel="feedback">
-        <MarkdownEditor
+        <WysiwygMarkdownEditor
           onChange=updateFeedbackCB
           value=feedback
           profile=Markdown.Permissive
