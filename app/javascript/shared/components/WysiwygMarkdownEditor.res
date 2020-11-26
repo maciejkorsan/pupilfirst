@@ -399,11 +399,6 @@ let textareaClasses = mode =>
   | Fullscreen => "px-3 pt-4 pb-8 h-full resize-none"
   }
 
-let onChangeWrapper = (onChange, event) => {
-  let value = ReactEvent.Form.target(event)["value"]
-  onChange(value)
-}
-
 let onSelect = (send, event) => {
   let htmlInputElement =
     ReactEvent.Selection.target(event) |> DomUtils.EventTarget.unsafeToHtmlInputElement
@@ -511,18 +506,16 @@ let make = (
           containerClasses="h-full"
           disabled={state.uploadState == Uploading}
           message="Uploading...">
-          <textarea
-            ?tabIndex
-            ?placeholder
-            ariaLabel="Markdown editor"
-            rows=4
-            maxLength
-            onSelect={onSelect(send)}
-            onChange={onChangeWrapper(onChange)}
-            id=state.id
-            value
-            className={textareaClasses(state.mode)}
-          />
+          <div className={textareaClasses(state.mode)}>
+            <WysiwygEditor
+              ?tabIndex
+              ?placeholder
+              ariaLabel="Markdown editor"
+              onChange
+              id=state.id
+              value
+            />
+          </div>
         </DisablingCover>
       </div>
     </div>
