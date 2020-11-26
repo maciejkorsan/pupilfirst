@@ -420,18 +420,6 @@ let handleEscapeKey = (send, event) =>
   | _anyOtherKey => ()
   }
 
-let handleKeyboardControls = (value, state, send, onChange, event) => {
-  let ctrlKey = Webapi.Dom.KeyboardEvent.ctrlKey
-  let metaKey = Webapi.Dom.KeyboardEvent.metaKey
-  let curriedModifyPhrase = modifyPhrase(value, state, send, onChange)
-
-  switch event |> Webapi.Dom.KeyboardEvent.key {
-  | "b" when event |> ctrlKey || event |> metaKey => curriedModifyPhrase(Bold)
-  | "i" when event |> ctrlKey || event |> metaKey => curriedModifyPhrase(Italic)
-  | _anyOtherKey => ()
-  }
-}
-
 @react.component
 let make = (
   ~value,
@@ -473,28 +461,6 @@ let make = (
     Some(
       () =>
         documentEventTarget |> Webapi.Dom.EventTarget.removeKeyDownEventListener(curriedHandler),
-    )
-  })
-
-  // Handle keyboard shortcuts for Bold and Italics buttons.
-  React.useEffect(() => {
-    let curriedHandler = handleKeyboardControls(value, state, send, onChange)
-    let textareaEventTarget = {
-      open Webapi.Dom
-      document |> Document.getElementById(state.id) |> OptionUtils.map(Element.asEventTarget)
-    }
-
-    textareaEventTarget |> OptionUtils.mapWithDefault(
-      Webapi.Dom.EventTarget.addKeyDownEventListener(curriedHandler),
-      (),
-    )
-
-    Some(
-      () =>
-        textareaEventTarget |> OptionUtils.mapWithDefault(
-          Webapi.Dom.EventTarget.removeKeyDownEventListener(curriedHandler),
-          (),
-        ),
     )
   })
 
