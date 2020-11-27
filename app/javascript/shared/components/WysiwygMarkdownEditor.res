@@ -15,10 +15,6 @@ type mode =
   | Fullscreen
   | Windowed
 
-type rec selection = (selectionStart, selectionEnd)
-and selectionStart = int
-and selectionEnd = int
-
 type rec uploadState =
   | Uploading
   | ReadyToUpload(uploadError)
@@ -28,14 +24,11 @@ type state = {
   id: string,
   mode: mode,
   editorState: DraftJs.EditorState.t,
-  selection: selection,
   uploadState: uploadState,
 }
 
 type action =
   | ClickFullscreen
-  | SetSelection(selection)
-  | BumpSelection(int)
   | PressEscapeKey
   | SetUploadError(uploadError)
   | SetUploading
@@ -50,10 +43,6 @@ let reducer = (state, action) =>
     | Fullscreen => Windowed
     }
     {...state, mode: mode}
-  | SetSelection(selection) => {...state, selection: selection}
-  | BumpSelection(offset) =>
-    let (selectionStart, selectionEnd) = state.selection
-    {...state, selection: (selectionStart + offset, selectionEnd + offset)}
   | PressEscapeKey =>
     let mode = switch state.mode {
     | Windowed
@@ -73,10 +62,9 @@ let computeInitialState = ((value, textareaId, mode)) => {
   | None => DateTime.randomId()
   }
 
-  let length = value |> String.length
   let editorState = markdownToEditorState(value)
 
-  {id: id, mode: mode, editorState: editorState, selection: (length, length), uploadState: ReadyToUpload(None)}
+  {id: id, mode: mode, editorState: editorState, uploadState: ReadyToUpload(None)}
 }
 
 let containerClasses = mode =>
@@ -108,75 +96,6 @@ let insertAt = (textToInsert, position, sourceText) => {
   let tail = sourceText->String.sub(position, (sourceText |> String.length) - position)
 
   head ++ (textToInsert ++ tail)
-}
-
-let wrapWith = (wrapper, selectionStart, selectionEnd, sourceText) => {
-  let head = sourceText->String.sub(0, selectionStart)
-  let selection = sourceText->String.sub(selectionStart, selectionEnd - selectionStart)
-  let tail = sourceText->String.sub(selectionEnd, (sourceText |> String.length) - selectionEnd)
-
-  head ++ (wrapper ++ (selection ++ (wrapper ++ tail)))
-}
-
-@ocaml.doc(
-  "
-  * After changing the Markdown using any of the controls or key commands, the
-  * textarea element will need to be manually \"synced\" in two ways:
-  *
-  * 1. The autosize update function needs to be called to let it know that we
-  *    have changed the value of the textare from the outside.
-  * 2. The cursor position will have jumped to the end of the text-area because
-  *    of the manual change of value of the controlled component; we'll need to
-  *    manually set the cursor position after the component has had a change to
-  *    re-render.
-  *
-  * This function is making an assumption that re-render can happen in 25ms.
-  * The need for these manual adjustments can be visibly seen by increasing the
-  * renderDelay to something like 1000ms.
- *"
-)
-let updateTextareaAfterDelay = (state, (startPosition, endPosition)) => {
-  let renderDelay = 25 //ms
-
-  switch state.mode {
-  | Windowed =>
-    Js.Global.setTimeout(() => TextareaAutosize.update(state.id), renderDelay) |> ignore
-  | Fullscreen => () // Autosizing is turned off in full-screen mode.
-  }
-
-  open Webapi.Dom
-  switch document |> Document.getElementById(state.id) {
-  | Some(element) => Js.Global.setTimeout(() => {
-      element
-      |> DomUtils.Element.unsafeToHtmlInputElement
-      |> HtmlInputElement.setSelectionRange(startPosition, endPosition)
-      Webapi.Dom.Document.getElementById(state.id, Webapi.Dom.document)
-      ->Belt.Option.flatMap(Webapi.Dom.Element.asHtmlElement)
-      ->Belt.Option.mapWithDefault((), Webapi.Dom.HtmlElement.focus)
-    }, renderDelay) |> ignore
-  | None => () // Avoid messing with the DOM if the textarea can't be found.
-  }
-}
-
-let finalizeChange = (~newValue, ~state, ~send, ~onChange, ~offsetChange) => {
-  let (selectionStart, selectionEnd) = state.selection
-
-  // The cursor needs to be bumped to account for changed value.
-  send(
-    switch offsetChange {
-    | #BumpSelection(offset) => BumpSelection(offset)
-    | #SetSelection(selection) => SetSelection(selection)
-    },
-  )
-  let (finalSelectionStart, finalSelectionEnd) = switch offsetChange {
-  | #BumpSelection(offset) => (selectionStart + offset, selectionEnd + offset)
-  | #SetSelection(start, selectionEnd) => (start, selectionEnd)
-  }
-  // Report the modified value to the parent.
-  onChange(newValue)
-
-  // Update the textarea after state changes are applied. Read more in function's documentation.
-  updateTextareaAfterDelay(state, (finalSelectionStart, finalSelectionEnd))
 }
 
 let modifyPhrase = (editorState, handleStateChange, phraseModifer) => {
@@ -260,18 +179,6 @@ let handleUploadFileResponse = (oldValue, state, send, onChange, json) => {
     }
 
     let insert = "\n" ++ (markdownEmbedCode ++ "\n")
-    let (_, selectionEnd) = state.selection
-    let newValue = oldValue |> insertAt(insert, selectionEnd)
-    finalizeChange(
-      ~newValue,
-      ~state,
-      ~send,
-      ~onChange,
-      ~offsetChange=#BumpSelection({
-        open String
-        length(newValue) - length(oldValue)
-      }),
-    )
     send(FinishUploading)
   } else {
     send(SetUploadError(Some("Failed to attach file! " ++ (errors |> Js.Array.joinWith(", ")))))
@@ -377,21 +284,6 @@ let textareaClasses = mode =>
   | Windowed => "p-3"
   | Fullscreen => "px-3 pt-4 pb-8 h-full resize-none"
   }
-
-let onSelect = (send, event) => {
-  let htmlInputElement =
-    ReactEvent.Selection.target(event) |> DomUtils.EventTarget.unsafeToHtmlInputElement
-
-  let selection = {
-    open Webapi.Dom
-    (
-      htmlInputElement |> HtmlInputElement.selectionStart,
-      htmlInputElement |> HtmlInputElement.selectionEnd,
-    )
-  }
-
-  send(SetSelection(selection))
-}
 
 let onHandleKeyCommand = (handleStateChange, editorState, command) => {
   let newState = DraftJs.RichUtils.handleKeyCommand(editorState, command)
