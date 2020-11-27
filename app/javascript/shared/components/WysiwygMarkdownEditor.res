@@ -2,6 +2,13 @@ exception InvalidModeForPreview
 
 %bs.raw(`require("./WysiwygMarkdownEditor.css")`)
 
+let markdownToEditorState = (value : string) => {
+  value
+    -> DraftJs.Markdown.markdownToDraft
+    -> DraftJs.convertFromRaw
+    -> DraftJs.EditorState.createWithContent
+}
+
 let str = React.string
 
 type mode =
@@ -20,6 +27,7 @@ and uploadError = option<string>
 type state = {
   id: string,
   mode: mode,
+  editorState: DraftJs.EditorState.t,
   selection: selection,
   uploadState: uploadState,
 }
@@ -32,6 +40,7 @@ type action =
   | SetUploadError(uploadError)
   | SetUploading
   | FinishUploading
+  | SetEditorState(DraftJs.EditorState.t)
 
 let reducer = (state, action) =>
   switch action {
@@ -55,6 +64,7 @@ let reducer = (state, action) =>
   | SetUploadError(error) => {...state, uploadState: ReadyToUpload(error)}
   | SetUploading => {...state, uploadState: Uploading}
   | FinishUploading => {...state, uploadState: ReadyToUpload(None)}
+  | SetEditorState(editorState) => {...state, editorState: editorState}
   }
 
 let computeInitialState = ((value, textareaId, mode)) => {
@@ -64,8 +74,9 @@ let computeInitialState = ((value, textareaId, mode)) => {
   }
 
   let length = value |> String.length
+  let editorState = markdownToEditorState(value)
 
-  {id: id, mode: mode, selection: (length, length), uploadState: ReadyToUpload(None)}
+  {id: id, mode: mode, editorState: editorState, selection: (length, length), uploadState: ReadyToUpload(None)}
 }
 
 let containerClasses = mode =>
@@ -414,6 +425,26 @@ let onSelect = (send, event) => {
   send(SetSelection(selection))
 }
 
+let onHandleKeyCommand = (handleStateChange, editorState, command) => {
+  let newState = DraftJs.RichUtils.handleKeyCommand(editorState, command)
+  switch newState {
+    | Some(state) => {
+      handleStateChange(state)
+      true
+    }
+    | None => false
+  }
+}
+
+let onChangeWrapper = (send, onChange, editorState) => {
+  send(SetEditorState(editorState))
+  editorState
+    -> DraftJs.EditorState.getCurrentContent
+    -> DraftJs.convertToRaw
+    -> DraftJs.Markdown.draftToMarkdown
+    -> onChange
+}
+
 let handleEscapeKey = (send, event) =>
   switch event |> Webapi.Dom.KeyboardEvent.key {
   | "Escape" => send(PressEscapeKey)
@@ -464,6 +495,8 @@ let make = (
     )
   })
 
+  let handleStateChange = (editorState) => onChangeWrapper(send, onChange, editorState)
+
   <div className={containerClasses(state.mode)}>
     {controls(value, state, send, onChange)}
     <div className={modeClasses(state.mode)}>
@@ -473,13 +506,14 @@ let make = (
           disabled={state.uploadState == Uploading}
           message="Uploading...">
           <div className={textareaClasses(state.mode)}>
-            <WysiwygEditor
+            <DraftJs.Editor
+              id=state.id
+              editorState=state.editorState
+              handleKeyCommand={(command) => onHandleKeyCommand(handleStateChange, state.editorState, command)}
+              onChange={(state) => handleStateChange(state)}
+              ariaLabel="Markdown editor"
               ?tabIndex
               ?placeholder
-              ariaLabel="Markdown editor"
-              onChange
-              id=state.id
-              value
             />
           </div>
         </DisablingCover>
