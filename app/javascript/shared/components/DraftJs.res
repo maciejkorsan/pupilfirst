@@ -22,6 +22,7 @@ type inlineStyle =
   | Bold
   | Italic
   | Code
+  | Underline
   | Strikethrough
 
 module RichUtils = {
@@ -33,6 +34,7 @@ module RichUtils = {
       | Bold => "BOLD"
       | Italic => "ITALIC"
       | Code => "CODE"
+      | Underline => "UNDERLINE"
       | Strikethrough => "STRIKETHROUGH"
     }
   }
