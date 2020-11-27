@@ -18,9 +18,27 @@ module RawDraftContentState = {
   type t = Js.t<{.}>
 }
 
+type inlineStyle =
+  | Bold
+  | Italic
+  | Code
+  | Strikethrough
+
 module RichUtils = {
   @bs.module("draft-js") @bs.scope("RichUtils") external handleKeyCommand: (EditorState.t, string) => Js.Nullable.t<EditorState.t> = "handleKeyCommand"
   let handleKeyCommand = (state, command) => handleKeyCommand(state, command)->Js.Nullable.toOption
+
+  let inlineStyleToCode = (inlineStyle) => {
+    switch inlineStyle {
+      | Bold => "BOLD"
+      | Italic => "ITALIC"
+      | Code => "CODE"
+      | Strikethrough => "STRIKETHROUGH"
+    }
+  }
+
+  @bs.module("draft-js") @bs.scope("RichUtils") external toggleInlineStyle: (EditorState.t, string) => EditorState.t = "toggleInlineStyle"
+  let toggleInlineStyle = (state, inlineStyle) => toggleInlineStyle(state, inlineStyleToCode(inlineStyle))
 }
 
 @bs.module("draft-js") external convertToRaw: (ContentState.t) => RawDraftContentState.t = "convertToRaw"

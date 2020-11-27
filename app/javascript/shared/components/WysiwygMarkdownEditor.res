@@ -179,40 +179,8 @@ let finalizeChange = (~newValue, ~state, ~send, ~onChange, ~offsetChange) => {
   updateTextareaAfterDelay(state, (finalSelectionStart, finalSelectionEnd))
 }
 
-type phraseModifer =
-  | Bold
-  | Italic
-  | Strikethrough
-
-let insertAndWrapper = phraseModifer =>
-  switch phraseModifer {
-  | Bold => ("**bold**", "**")
-  | Italic => ("*italics*", "*")
-  | Strikethrough => ("~~strikethrough~~", "~~")
-  }
-
-let modifyPhrase = (oldValue, state, send, onChange, phraseModifer) => {
-  let (selectionStart, selectionEnd) = state.selection
-  let (insert, wrapper) = phraseModifer |> insertAndWrapper
-
-  let newValue = if selectionStart == selectionEnd {
-    oldValue |> insertAt(insert, selectionStart)
-  } else {
-    oldValue |> wrapWith(wrapper, selectionStart, selectionEnd)
-  }
-
-  finalizeChange(
-    ~newValue,
-    ~state,
-    ~send,
-    ~onChange,
-    ~offsetChange=selectionStart === selectionEnd
-      ? #SetSelection(
-          selectionStart + String.length(wrapper),
-          selectionStart + String.length(insert) - String.length(wrapper),
-        )
-      : #BumpSelection(String.length(wrapper)),
-  )
+let modifyPhrase = (editorState, handleStateChange, phraseModifer) => {
+  handleStateChange(DraftJs.RichUtils.toggleInlineStyle(editorState, phraseModifer))
 }
 
 let controlsContainerClasses = mode =>
@@ -222,10 +190,10 @@ let controlsContainerClasses = mode =>
   | Fullscreen => "border-gray-400 "
   }
 
-let controls = (value, state, send, onChange) => {
+let controls = (state, handleStateChange, send) => {
   let buttonClasses = "px-2 py-1 hover:bg-gray-300 hover:text-primary-500 focus:outline-none "
-  let {mode} = state
-  let curriedModifyPhrase = modifyPhrase(value, state, send, onChange)
+  let {editorState, mode} = state
+  let curriedModifyPhrase = modifyPhrase(editorState, handleStateChange)
 
   <div className={controlsContainerClasses(state.mode)}>
     <div className="bg-white border border-gray-400 rounded-t border-b-0">
@@ -498,7 +466,7 @@ let make = (
   let handleStateChange = (editorState) => onChangeWrapper(send, onChange, editorState)
 
   <div className={containerClasses(state.mode)}>
-    {controls(value, state, send, onChange)}
+    {controls(state, handleStateChange, send)}
     <div className={modeClasses(state.mode)}>
       <div className={editorContainerClasses(state.mode)}>
         <DisablingCover
