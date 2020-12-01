@@ -1,6 +1,7 @@
 exception InvalidModeForPreview
 
 %bs.raw(`require("./WysiwygMarkdownEditor.css")`)
+%bs.raw(`require("draft-js/dist/Draft.css")`)
 
 let markdownToEditorState = (value : string) => {
   value
