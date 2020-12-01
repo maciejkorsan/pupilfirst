@@ -1,5 +1,30 @@
+module DraftInlineStyle = {
+  type t = Js.t<{.}>
+}
+
+module DraftBlockType = {
+  type t = Js.t<{.}>
+}
+
+module ContentBlock = {
+  type t = Js.t<{.}>
+
+  @bs.send external getType: (t) => DraftBlockType.t = "getType"
+  let getType = (block: t) => getType(block)
+}
+
 module ContentState = {
   type t = Js.t<{.}>
+
+  @bs.send external getBlockForKey: (t, string) => ContentBlock.t = "getBlockForKey"
+  let getBlockForKey = (state: t, key: string) => getBlockForKey(state, key)
+}
+
+module SelectionState = {
+  type t = Js.t<{.}>
+
+  @bs.send external getStartKey: (t) => string = "getStartKey"
+  let getStartKey = (selection: t) => getStartKey(selection)
 }
 
 module EditorState = {
@@ -12,6 +37,12 @@ module EditorState = {
 
   @bs.send external getCurrentContent: (t) => ContentState.t = "getCurrentContent"
   let getCurrentContent = (state: t) => getCurrentContent(state)
+
+  @bs.send external getSelection: (t) => SelectionState.t = "getSelection"
+  let getSelection = (state: t) => getSelection(state)
+
+  @bs.send external getCurrentInlineStyle: (t) => DraftInlineStyle.t = "getCurrentInlineStyle"
+  let getCurrentInlineStyle = (state: t) => getCurrentInlineStyle(state)
 }
 
 module RawDraftContentState = {
@@ -24,6 +55,20 @@ type inlineStyle =
   | Code
   | Underline
   | Strikethrough
+
+type blockType =
+  | Unstyled
+  | Paragraph
+  | H1
+  | H2
+  | H3
+  | H4
+  | H5
+  | H6
+  | Blockquote
+  | UL
+  | OL
+  | CodeBlock
 
 module RichUtils = {
   @bs.module("draft-js") @bs.scope("RichUtils") external handleKeyCommand: (EditorState.t, string) => Js.Nullable.t<EditorState.t> = "handleKeyCommand"
@@ -41,6 +86,29 @@ module RichUtils = {
 
   @bs.module("draft-js") @bs.scope("RichUtils") external toggleInlineStyle: (EditorState.t, string) => EditorState.t = "toggleInlineStyle"
   let toggleInlineStyle = (state, inlineStyle) => toggleInlineStyle(state, inlineStyleToCode(inlineStyle))
+
+  let blockTypeToCode = (blockType) => {
+    switch blockType {
+      | Unstyled => "unstyled"
+      | Paragraph => "paragraph"
+      | H1 => "header-one"
+      | H2 => "header-two"
+      | H3 => "header-three"
+      | H4 => "header-four"
+      | H5 => "header-five"
+      | H6 => "header-six"
+      | Blockquote => "blockquote"
+      | UL => "unordered-list-item"
+      | OL => "ordered-list-item"
+      | CodeBlock => "code-block"
+    }
+  }
+
+  @bs.module("draft-js") @bs.scope("RichUtils") external toggleBlockType: (EditorState.t, string) => EditorState.t = "toggleBlockType"
+  let toggleBlockType = (state, blockType) => toggleBlockType(state, blockTypeToCode(blockType))
+
+  @bs.module("draft-js") @bs.scope("RichUtils") external getCurrentBlockType: (EditorState.t, string) => string = "getCurrentBlockType"
+  let getCurrentBlockType = (state) => getCurrentBlockType(state)
 }
 
 @bs.module("draft-js") external convertToRaw: (ContentState.t) => RawDraftContentState.t = "convertToRaw"

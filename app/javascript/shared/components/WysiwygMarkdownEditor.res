@@ -99,8 +99,12 @@ let insertAt = (textToInsert, position, sourceText) => {
   head ++ (textToInsert ++ tail)
 }
 
-let modifyPhrase = (editorState, handleStateChange, phraseModifer) => {
-  handleStateChange(DraftJs.RichUtils.toggleInlineStyle(editorState, phraseModifer))
+let modifyInlineStyle = (editorState, handleStateChange, inlineStyle: DraftJs.inlineStyle) => {
+  handleStateChange(DraftJs.RichUtils.toggleInlineStyle(editorState, inlineStyle))
+}
+
+let modifyBlockStyle = (editorState, handleStateChange, blockType: DraftJs.blockType) => {
+  handleStateChange(DraftJs.RichUtils.toggleBlockType(editorState, blockType))
 }
 
 let controlsContainerClasses = mode =>
@@ -113,28 +117,70 @@ let controlsContainerClasses = mode =>
 let controls = (state, handleStateChange, send) => {
   let buttonClasses = "px-2 py-1 hover:bg-gray-300 hover:text-primary-500 focus:outline-none "
   let {editorState, mode} = state
-  let curriedModifyPhrase = modifyPhrase(editorState, handleStateChange)
+  let curriedModifyInlineStyle = modifyInlineStyle(editorState, handleStateChange)
+  let curriedModifyBlockStyle  = modifyBlockStyle(editorState, handleStateChange)
 
   <div className={controlsContainerClasses(state.mode)}>
-    <div className="bg-white border border-gray-400 rounded-t border-b-0">
-      <button className=buttonClasses onClick={_ => curriedModifyPhrase(Bold)}>
-        <i className="fas fa-bold fa-fw" />
-      </button>
-      <button
-        className={buttonClasses ++ "border-l border-gray-400"}
-        onClick={_ => curriedModifyPhrase(Italic)}>
-        <i className="fas fa-italic fa-fw" />
-      </button>
-      <button
-        className={buttonClasses ++ "border-l border-gray-400"}
-        onClick={_ => curriedModifyPhrase(Underline)}>
-        <i className="fas fa-underline fa-fw" />
-      </button>
-      <button
-        className={buttonClasses ++ "border-l border-gray-400"}
-        onClick={_ => curriedModifyPhrase(Strikethrough)}>
-        <i className="fas fa-strikethrough fa-fw" />
-      </button>
+    <div className="flex">
+      <div className="bg-white border border-gray-400 rounded-t border-b-0">
+        <button
+          className=buttonClasses
+          onClick={_ => curriedModifyInlineStyle(Bold)}>
+          <i className="fas fa-bold fa-fw" />
+        </button>
+        <button
+          className={buttonClasses ++ "border-l border-gray-400"}
+          onClick={_ => curriedModifyInlineStyle(Italic)}>
+          <i className="fas fa-italic fa-fw" />
+        </button>
+        <button
+          className={buttonClasses ++ "border-l border-gray-400"}
+          onClick={_ => curriedModifyInlineStyle(Underline)}>
+          <i className="fas fa-underline fa-fw" />
+        </button>
+        <button
+          className={buttonClasses ++ "border-l border-gray-400"}
+          onClick={_ => curriedModifyInlineStyle(Strikethrough)}>
+          <i className="fas fa-strikethrough fa-fw" />
+        </button>
+      </div>
+      <div className="bg-white border border-gray-400 rounded-t border-b-0 ml-2">
+        <button
+          className=buttonClasses
+          onClick={_ => curriedModifyBlockStyle(Paragraph)}>
+          <i className="fas fa-paragraph fa-fw" />
+        </button>
+        <button
+          className={buttonClasses ++ "border-l border-gray-400"}
+          onClick={_ => curriedModifyBlockStyle(H1)}>
+          <i className="fas fa-h1 fa-fw" />
+        </button>
+        <button
+          className={buttonClasses ++ "border-l border-gray-400"}
+          onClick={_ => curriedModifyBlockStyle(H2)}>
+          <i className="fas fa-h2 fa-fw" />
+        </button>
+        <button
+          className={buttonClasses ++ "border-l border-gray-400"}
+          onClick={_ => curriedModifyBlockStyle(H3)}>
+          <i className="fas fa-h3 fa-fw" />
+        </button>
+        <button
+          className={buttonClasses ++ "border-l border-gray-400"}
+          onClick={_ => curriedModifyBlockStyle(Blockquote)}>
+          <i className="fas fa-quote-right fa-fw" />
+        </button>
+        <button
+          className={buttonClasses ++ "border-l border-gray-400"}
+          onClick={_ => curriedModifyBlockStyle(CodeBlock)}>
+          <i className="fas fa-code fa-fw" />
+        </button>
+        <button
+          className={buttonClasses ++ "border-l border-gray-400"}
+          onClick={_ => curriedModifyBlockStyle(Unstyled)}>
+          <i className="fas fa-remove-format fa-fw" />
+        </button>
+      </div>
     </div>
     <div className="py-1">
       <button
