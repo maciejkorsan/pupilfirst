@@ -74,38 +74,36 @@ module RichUtils = {
   @bs.module("draft-js") @bs.scope("RichUtils") external handleKeyCommand: (EditorState.t, string) => Js.Nullable.t<EditorState.t> = "handleKeyCommand"
   let handleKeyCommand = (state, command) => handleKeyCommand(state, command)->Js.Nullable.toOption
 
-  let inlineStyleToCode = (inlineStyle) => {
+  let inlineStyleString = (inlineStyle) =>
     switch inlineStyle {
-      | Bold => "BOLD"
-      | Italic => "ITALIC"
-      | Code => "CODE"
-      | Underline => "UNDERLINE"
-      | Strikethrough => "STRIKETHROUGH"
+    | Bold => "BOLD"
+    | Italic => "ITALIC"
+    | Code => "CODE"
+    | Underline => "UNDERLINE"
+    | Strikethrough => "STRIKETHROUGH"
     }
-  }
 
   @bs.module("draft-js") @bs.scope("RichUtils") external toggleInlineStyle: (EditorState.t, string) => EditorState.t = "toggleInlineStyle"
-  let toggleInlineStyle = (state, inlineStyle) => toggleInlineStyle(state, inlineStyleToCode(inlineStyle))
+  let toggleInlineStyle = (state, inlineStyle) => toggleInlineStyle(state, inlineStyleString(inlineStyle))
 
-  let blockTypeToCode = (blockType) => {
+  let blockTypeString = (blockType) =>
     switch blockType {
-      | Unstyled => "unstyled"
-      | Paragraph => "paragraph"
-      | H1 => "header-one"
-      | H2 => "header-two"
-      | H3 => "header-three"
-      | H4 => "header-four"
-      | H5 => "header-five"
-      | H6 => "header-six"
-      | Blockquote => "blockquote"
-      | UL => "unordered-list-item"
-      | OL => "ordered-list-item"
-      | CodeBlock => "code-block"
+    | Unstyled => "unstyled"
+    | Paragraph => "paragraph"
+    | H1 => "header-one"
+    | H2 => "header-two"
+    | H3 => "header-three"
+    | H4 => "header-four"
+    | H5 => "header-five"
+    | H6 => "header-six"
+    | Blockquote => "blockquote"
+    | UL => "unordered-list-item"
+    | OL => "ordered-list-item"
+    | CodeBlock => "code-block"
     }
-  }
 
   @bs.module("draft-js") @bs.scope("RichUtils") external toggleBlockType: (EditorState.t, string) => EditorState.t = "toggleBlockType"
-  let toggleBlockType = (state, blockType) => toggleBlockType(state, blockTypeToCode(blockType))
+  let toggleBlockType = (state, blockType) => toggleBlockType(state, blockTypeString(blockType))
 
   @bs.module("draft-js") @bs.scope("RichUtils") external getCurrentBlockType: (EditorState.t, string) => string = "getCurrentBlockType"
   let getCurrentBlockType = (state) => getCurrentBlockType(state)
