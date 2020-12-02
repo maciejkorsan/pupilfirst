@@ -2,7 +2,6 @@ type inlineStyle =
   | Bold
   | Italic
   | Code
-  | Underline
   | Strikethrough
 
 let inlineStyleString = (inlineStyle) =>
@@ -10,7 +9,6 @@ let inlineStyleString = (inlineStyle) =>
   | Bold => "BOLD"
   | Italic => "ITALIC"
   | Code => "CODE"
-  | Underline => "UNDERLINE"
   | Strikethrough => "STRIKETHROUGH"
   }
 
@@ -19,7 +17,6 @@ let parseInlineStyle = (code: string) =>
   | "BOLD" => Some(Bold)
   | "ITALIC" => Some(Italic)
   | "CODE" => Some(Code)
-  | "UNDERLINE" => Some(Underline)
   | "STRIKETHROUGH" => Some(Strikethrough)
   | _ => None
   }
@@ -136,29 +133,20 @@ let convertFromRaw  = (value) => convertFromRaw(value)
 
 
 module Markdown = {
-  let underlineMe = () => "++"
   let draftToMarkdownOptions = {
-    "styleItems": {
-      "UNDERLINE": {
-        "open": underlineMe,
-        "close": underlineMe,
-      },
-    }
+    "styleItems": ()
   }
 
   @bs.module("markdown-draft-js") external draftToMarkdown: (RawDraftContentState.t, 'a) => string = "draftToMarkdown"
   let draftToMarkdown  = (value, options) => draftToMarkdown(value, options)
 
   let markdownToDraftOptions = {
-    "blockStyles": {
-      "ins_open": "UNDERLINE",
-    },
     "remarkablePreset": "commonmark",
     "remarkableOptions": {
       "enable": {
         "core":  ["abbr"],
         "block": ["table"],
-        "inline": ["links", "emphasis", "ins"],
+        "inline": ["links", "emphasis"],
       }
     }
   }

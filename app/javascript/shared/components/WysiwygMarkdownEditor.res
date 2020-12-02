@@ -137,11 +137,6 @@ let controls = (state, handleStateChange, send) => {
         </button>
         <button
           className={buttonClasses ++ "border-l border-gray-400"}
-          onClick={_ => curriedModifyInlineStyle(Underline)}>
-          <i className="fas fa-underline fa-fw" />
-        </button>
-        <button
-          className={buttonClasses ++ "border-l border-gray-400"}
           onClick={_ => curriedModifyInlineStyle(Strikethrough)}>
           <i className="fas fa-strikethrough fa-fw" />
         </button>
