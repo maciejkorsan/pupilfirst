@@ -417,7 +417,7 @@ let make = (
           containerClasses="h-full"
           disabled={state.uploadState == Uploading}
           message="Uploading...">
-          <div className={textareaClasses(state.mode)}>
+          <div className={MarkdownBlock.markdownBlockClasses(profile, Some(textareaClasses(state.mode)))}>
             <DraftJs.Editor
               id=state.id
               editorState=state.editorState
