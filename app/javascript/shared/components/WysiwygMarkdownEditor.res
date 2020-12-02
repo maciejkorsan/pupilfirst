@@ -4,8 +4,10 @@ exception InvalidModeForPreview
 %bs.raw(`require("draft-js/dist/Draft.css")`)
 
 let markdownToEditorState = (value : string) => {
+  let options = DraftJs.Markdown.markdownToDraftOptions
+  Js.log({"options": options, "markdown": value})
   value
-    -> DraftJs.Markdown.markdownToDraft
+    -> DraftJs.Markdown.markdownToDraft(options)
     -> DraftJs.convertFromRaw
     -> DraftJs.EditorState.createWithContent
 }
@@ -350,11 +352,13 @@ let onHandleKeyCommand = (handleStateChange, editorState, command) => {
 
 let onChangeWrapper = (send, onChange, editorState) => {
   send(SetEditorState(editorState))
-  editorState
+  let options = DraftJs.Markdown.draftToMarkdownOptions
+  let markdown = editorState
     -> DraftJs.EditorState.getCurrentContent
     -> DraftJs.convertToRaw
-    -> DraftJs.Markdown.draftToMarkdown
-    -> onChange
+    -> DraftJs.Markdown.draftToMarkdown(options)
+  Js.log({"options": options, "markdown": markdown})
+  onChange(markdown)
 }
 
 let handleEscapeKey = (send, event) =>

@@ -136,11 +136,34 @@ let convertFromRaw  = (value) => convertFromRaw(value)
 
 
 module Markdown = {
-  @bs.module("markdown-draft-js") external draftToMarkdown: (RawDraftContentState.t) => string = "draftToMarkdown"
-  let draftToMarkdown  = (value) => draftToMarkdown(value)
+  let underlineMe = () => "++"
+  let draftToMarkdownOptions = {
+    "styleItems": {
+      "UNDERLINE": {
+        "open": underlineMe,
+        "close": underlineMe,
+      },
+    }
+  }
 
-  @bs.module("markdown-draft-js") external markdownToDraft: (string) => RawDraftContentState.t = "markdownToDraft"
-  let markdownToDraft  = (value) => markdownToDraft(value)
+  @bs.module("markdown-draft-js") external draftToMarkdown: (RawDraftContentState.t, 'a) => string = "draftToMarkdown"
+  let draftToMarkdown  = (value, options) => draftToMarkdown(value, options)
+
+  let markdownToDraftOptions = {
+    "blockStyles": {
+      "ins_open": "UNDERLINE",
+    },
+    "remarkablePreset": "commonmark",
+    "remarkableOptions": {
+      "enable": {
+        "core":  ["abbr"],
+        "block": ["table"],
+        "inline": ["links", "emphasis", "ins"],
+      }
+    }
+  }
+  @bs.module("markdown-draft-js") external markdownToDraft: (string, 'a) => RawDraftContentState.t = "markdownToDraft"
+  let markdownToDraft  = (value, options) => markdownToDraft(value, options)
 }
 
 module Editor = {
