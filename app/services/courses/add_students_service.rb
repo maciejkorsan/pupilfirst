@@ -3,6 +3,9 @@ require 'keycloak'
 module Courses
   # Adds a list of new students to a course.
   class AddStudentsService
+    include KeycloakHelper
+
+
     def initialize(course, notify: false)
       @course = course
       @notify = notify
@@ -20,6 +23,8 @@ module Courses
         students = new_students.map do |student_data|
           student = create_new_student(student_data)
           create_keycloak_user(student_data.email,student_data.name)
+          register_event_for(student_data)
+
           student
         end
 
@@ -116,13 +121,6 @@ module Courses
       team
     end
 
-    def create_keycloak_user(email, name)
-      names = name.split(' ')
-      first_name = names.pop
-      last_name = names.join(' ') || ''
-      keycloak_client.create_user(email, first_name, last_name)
-    end
-
     def school
       @school ||= @course.school
     end
@@ -131,8 +129,10 @@ module Courses
       @first_level ||= @course.levels.find_by(number: 1)
     end
 
-    def keycloak_client
-      @keycloak_client ||= Keycloak::Client.new
+    def register_event_for(user)
+      event = Xapi::RegisteredProductService.new(user.to_xapi_agent, @course)
+      event.set_statement
+      event.delay.persist
     end
   end
 end

@@ -138,4 +138,8 @@ class User < ApplicationRecord
       title.presence || affiliation.presence
     end
   end
+
+  def to_xapi_agent
+    Xapi.create_agent(agent_type: 'Agent', email: email, name: name)
+  end
 end

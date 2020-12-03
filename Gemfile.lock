@@ -1,4 +1,14 @@
 GIT
+  remote: https://github.com/growthtribeacademy/Xapi.git
+  revision: 70a670ad8302e2a16f62594cb607b93131132000
+  branch: master
+  specs:
+    xapi (0.0.1)
+      addressable (~> 2.3)
+      faraday (~> 1.1.0)
+      ruby-duration (~> 3.2)
+
+GIT
   remote: https://github.com/mahesh-krishnakumar/bootstrap4-kaminari-views.git
   revision: 5ad07179ca22db5d17684f21096bcd0fddc6e289
   specs:
@@ -281,6 +291,7 @@ GEM
       mini_magick (>= 4.9.5, < 5)
       ruby-vips (>= 2.0.17, < 3)
     iniparse (1.5.0)
+    iso8601 (0.13.0)
     jbuilder (2.10.1)
       activesupport (>= 5.0.0)
     jmespath (1.4.0)
@@ -476,7 +487,6 @@ GEM
       execjs
       railties (>= 3.2)
       tilt
-    redcard (1.1.0)
     reform (2.3.3)
       disposable (>= 0.4.2, < 0.5.0)
       representable (>= 2.4.0, < 3.1.0)
@@ -546,6 +556,10 @@ GEM
       activesupport (>= 4.2.0)
       rack (>= 1.1)
       rubocop (>= 0.87.0)
+    ruby-duration (3.2.3)
+      activesupport (>= 3.0.0)
+      i18n
+      iso8601
     ruby-graphviz (1.2.5)
       rexml
     ruby-progressbar (1.10.1)
@@ -640,8 +654,6 @@ GEM
     websocket-driver (0.7.3)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    xapi (0.0.1)
-      redcard (~> 1.0)
     xpath (3.2.0)
       nokogiri (~> 1.8)
     zeitwerk (2.4.1)
@@ -757,7 +769,7 @@ DEPENDENCIES
   webdrivers (~> 4.0)
   webmock (~> 3.5)
   webpacker (~> 5.2)
-  xapi (~> 0.0.1)
+  xapi (~> 0.0.1)!
 
 RUBY VERSION
    ruby 2.7.2p137
