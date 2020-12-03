@@ -1,12 +1,9 @@
 module Xapi
   class RegisteredProductService < Xapi::BaseService
+
     def initialize(agent, course)
       @agent = agent
-      @verb = verb
       @object = object(course)
-    end
-
-    def set_statement
       @statement = Xapi.create_statement(actor: @agent, verb: verb, object: @object)
     end
 

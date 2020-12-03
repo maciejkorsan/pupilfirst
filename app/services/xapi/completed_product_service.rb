@@ -3,9 +3,6 @@ module Xapi
     def initialize(agent, course)
       @agent = agent
       @object = object(course)
-    end
-
-    def set_statement
       @statement = Xapi.create_statement(actor: @agent, verb: verb, object: @object)
     end
 

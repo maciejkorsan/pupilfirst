@@ -23,7 +23,7 @@ module Courses
         students = new_students.map do |student_data|
           student = create_new_student(student_data)
           create_keycloak_user(student_data.email,student_data.name)
-          register_event_for(student_data)
+          register_event_for(student.user)
 
           student
         end
@@ -131,7 +131,6 @@ module Courses
 
     def register_event_for(user)
       event = Xapi::RegisteredProductService.new(user.to_xapi_agent, @course)
-      event.set_statement
       event.delay.persist
     end
   end

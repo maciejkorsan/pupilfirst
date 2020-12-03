@@ -26,7 +26,6 @@ module TimelineEvents
     end
 
     def send_xapi_statement(event)
-      event.set_statement
       event.delay.persist
     end
   end
