@@ -116,7 +116,7 @@ let controlsContainerClasses = mode =>
   | Fullscreen => "border-gray-400 "
   }
 
-let controls = (state, handleStateChange, send) => {
+let controls = (state, profile,  handleStateChange, send) => {
   let buttonClasses = "px-2 py-1 hover:bg-gray-300 hover:text-primary-500 focus:outline-none "
   let {editorState, mode} = state
   let curriedModifyInlineStyle = modifyInlineStyle(editorState, handleStateChange)
@@ -141,43 +141,47 @@ let controls = (state, handleStateChange, send) => {
           <i className="fas fa-strikethrough fa-fw" />
         </button>
       </div>
-      <div className="bg-white border border-gray-400 rounded-t border-b-0 ml-2">
-        <button
-          className=buttonClasses
-          onClick={_ => curriedModifyBlockStyle(Paragraph)}>
-          <i className="fas fa-paragraph fa-fw" />
-        </button>
-        <button
-          className={buttonClasses ++ "border-l border-gray-400"}
-          onClick={_ => curriedModifyBlockStyle(H1)}>
-          <i className="fas fa-h1 fa-fw" />
-        </button>
-        <button
-          className={buttonClasses ++ "border-l border-gray-400"}
-          onClick={_ => curriedModifyBlockStyle(H2)}>
-          <i className="fas fa-h2 fa-fw" />
-        </button>
-        <button
-          className={buttonClasses ++ "border-l border-gray-400"}
-          onClick={_ => curriedModifyBlockStyle(H3)}>
-          <i className="fas fa-h3 fa-fw" />
-        </button>
-        <button
-          className={buttonClasses ++ "border-l border-gray-400"}
-          onClick={_ => curriedModifyBlockStyle(Blockquote)}>
-          <i className="fas fa-quote-right fa-fw" />
-        </button>
-        <button
-          className={buttonClasses ++ "border-l border-gray-400"}
-          onClick={_ => curriedModifyBlockStyle(CodeBlock)}>
-          <i className="fas fa-code fa-fw" />
-        </button>
-        <button
-          className={buttonClasses ++ "border-l border-gray-400"}
-          onClick={_ => curriedModifyBlockStyle(Unstyled)}>
-          <i className="fas fa-remove-format fa-fw" />
-        </button>
-      </div>
+      {switch profile {
+       | Markdown.Permissive =>
+        <div className="bg-white border border-gray-400 rounded-t border-b-0 ml-2">
+          <button
+            className=buttonClasses
+            onClick={_ => curriedModifyBlockStyle(Paragraph)}>
+            <i className="fas fa-paragraph fa-fw" />
+          </button>
+          <button
+            className={buttonClasses ++ "border-l border-gray-400"}
+            onClick={_ => curriedModifyBlockStyle(H1)}>
+            <i className="fas fa-h1 fa-fw" />
+          </button>
+          <button
+            className={buttonClasses ++ "border-l border-gray-400"}
+            onClick={_ => curriedModifyBlockStyle(H2)}>
+            <i className="fas fa-h2 fa-fw" />
+          </button>
+          <button
+            className={buttonClasses ++ "border-l border-gray-400"}
+            onClick={_ => curriedModifyBlockStyle(H3)}>
+            <i className="fas fa-h3 fa-fw" />
+          </button>
+          <button
+            className={buttonClasses ++ "border-l border-gray-400"}
+            onClick={_ => curriedModifyBlockStyle(Blockquote)}>
+            <i className="fas fa-quote-right fa-fw" />
+          </button>
+          <button
+            className={buttonClasses ++ "border-l border-gray-400"}
+            onClick={_ => curriedModifyBlockStyle(CodeBlock)}>
+            <i className="fas fa-code fa-fw" />
+          </button>
+          <button
+            className={buttonClasses ++ "border-l border-gray-400"}
+            onClick={_ => curriedModifyBlockStyle(Unstyled)}>
+            <i className="fas fa-remove-format fa-fw" />
+          </button>
+        </div>
+       | _ => React.null
+    }}
     </div>
     <div className="py-1">
       <button
@@ -409,7 +413,7 @@ let make = (
   let handleStateChange = (editorState) => onChangeWrapper(send, onChange, editorState)
 
   <div className={containerClasses(state.mode)}>
-    {controls(state, handleStateChange, send)}
+    {controls(state, profile, handleStateChange, send)}
     <div className={modeClasses(state.mode)}>
       <div className={editorContainerClasses(state.mode)}>
         <DisablingCover
