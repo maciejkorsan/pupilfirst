@@ -77,6 +77,7 @@ gem 'batch-loader', '~> 1.5' # Generic lazy batching mechanism to avoid N+1 DB q
 
 # GrowthTribe gems
 gem 'omniauth-keycloak', '~>1.2.0'
+gem 'xapi', '~>0.0.1' # Ruby library for implementing xAPIs Statements, Profiles and Querying Statements for LRS in simple way.
 
 # Rails assets!
 source 'https://rails-assets.org' do
