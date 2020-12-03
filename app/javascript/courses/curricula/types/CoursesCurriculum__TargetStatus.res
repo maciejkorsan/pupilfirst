@@ -33,6 +33,8 @@ type t = {
   status: status,
 }
 
+let tc = I18n.t(~scope="components.CoursesCurriculum__TargetStatus")
+
 type submissionStatus =
   | SubmissionMissing
   | SubmissionPendingReview
