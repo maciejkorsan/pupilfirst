@@ -141,12 +141,15 @@ module Markdown = {
   let draftToMarkdown  = (value, options) => draftToMarkdown(value, options)
 
   let markdownToDraftOptions = {
+    "blockStyles": {
+      "del_open": "STRIKETHROUGH",
+    },
     "remarkablePreset": "commonmark",
     "remarkableOptions": {
       "enable": {
         "core":  ["abbr"],
         "block": ["table"],
-        "inline": ["links", "emphasis"],
+        "inline": ["links", "emphasis", "del"],
       }
     }
   }
