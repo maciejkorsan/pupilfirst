@@ -73,6 +73,30 @@ module ContentBlock = {
 
   @bs.send external getType: (t) => string = "getType"
   let getType = (block: t) => getType(block)
+
+  @bs.send external findEntityRanges: (t, 'a, 'a) => unit = "findEntityRanges"
+  let findEntityRanges = (block: t, filterFn, callback) => findEntityRanges(block, filterFn, callback)
+}
+
+module DraftEntityInstance = {
+  type t = Js.t<{.}>
+
+  type data = {
+    url: string,
+  }
+
+  @bs.send external getData: (t) => data = "getData"
+  let getData = (entity: t) => getData(entity)
+
+  @bs.send external getType: (t) => string = "getType"
+  let getType = (block: t) => getType(block)
+}
+
+module CharacterMetadata = {
+  type t = Js.t<{.}>
+
+  @bs.send external getEntity: (t) => Js.Nullable.t<string> = "getEntity"
+  let getEntity = (state: t) => getEntity(state)
 }
 
 module ContentState = {
@@ -80,6 +104,9 @@ module ContentState = {
 
   @bs.send external getBlockForKey: (t, string) => ContentBlock.t = "getBlockForKey"
   let getBlockForKey = (state: t, key: string) => getBlockForKey(state, key)
+
+  @bs.send external getEntity: (t, string) => DraftEntityInstance.t = "getEntity"
+  let getEntity = (state: t, key: string) => getEntity(state, key)
 }
 
 module SelectionState = {
@@ -89,13 +116,57 @@ module SelectionState = {
   let getStartKey = (selection: t) => getStartKey(selection)
 }
 
+module CompositeDecorator = {
+  type t = Js.t<{.}>
+  @bs.module("draft-js") @bs.new external create: 'a => t = "CompositeDecorator"
+}
+
 module EditorState = {
   type t = Js.t<{.}>
 
-  @bs.module("draft-js") @bs.scope("EditorState") external createEmpty: () => t = "createEmpty"
-  let createEmpty = createEmpty
-  @bs.module("draft-js") @bs.scope("EditorState") external createWithContent: (ContentState.t) => t = "createWithContent"
-  let createWithContent = (raw) => createWithContent(raw)
+  type decoratorParams = {
+    contentState: ContentState.t,
+    entityKey: string,
+    children: React.element,
+  }
+
+  let findLinkEntities = (contentBlock, callback, contentState) => {
+    let isLink = (state, key) => {
+      let entity = ContentState.getEntity(state, key)
+      let entityType = DraftEntityInstance.getType(entity)
+      entityType === "LINK"
+    }
+
+    let filterFn = (state, character) => {
+      let entityKey = CharacterMetadata.getEntity(character)
+
+      switch Js.Nullable.toOption(entityKey) {
+      | Some(key) => isLink(state, key)
+      | _ => false
+      }
+    }
+
+    ContentBlock.findEntityRanges(contentBlock, filterFn(contentState), callback)
+  }
+
+  let link = (props: decoratorParams) => {
+    let entity = ContentState.getEntity(props.contentState, props.entityKey)
+    let data = DraftEntityInstance.getData(entity)
+    <a href={data.url}>props.children</a>
+  }
+
+  let decoratorStrategies = [
+    {
+      "strategy": findLinkEntities,
+      "component": link,
+    },
+  ]
+  let decorator = CompositeDecorator.create(decoratorStrategies)
+
+  @bs.module("draft-js") @bs.scope("EditorState") external createEmpty: ('a) => t = "createEmpty"
+  let createEmpty = createEmpty(decorator)
+  @bs.module("draft-js") @bs.scope("EditorState") external createWithContent: (ContentState.t, 'a) => t = "createWithContent"
+  let createWithContent = (raw) => createWithContent(raw, decorator)
 
   @bs.send external getCurrentContent: (t) => ContentState.t = "getCurrentContent"
   let getCurrentContent = (state: t) => getCurrentContent(state)
