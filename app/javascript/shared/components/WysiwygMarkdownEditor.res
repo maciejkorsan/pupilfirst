@@ -219,6 +219,32 @@ let focusOnEditor = id => {
   |> OptionUtils.mapWithDefault(element => element |> HtmlElement.focus, ())
 }
 
+type embeddedFile = {
+  filename: string,
+  url: string
+}
+
+let parseEmbedFile = (code) => {
+  let lenght = Js.String.length(code)
+  let withOuterBracketsRemoved = Js.String2.substring(code, ~from=1, ~to_=lenght-1)
+  let parts = Js.String2.split(withOuterBracketsRemoved, "](")
+  {
+    filename: parts[0],
+    url:      parts[1],
+  }
+}
+
+type embedCode =
+  | EmbededFile(embeddedFile)
+  | EmbededImage(embeddedFile)
+
+let parseEmbededCode = (code) => {
+  switch Js.String2.startsWith(code, "!") {
+  | true => EmbededImage(parseEmbedFile(Js.String2.substringToEnd(code, ~from=1)))
+  | false => EmbededFile(parseEmbedFile(code))
+  }
+}
+
 let handleUploadFileResponse = (oldValue, state, send, onChange, json) => {
   let errors = json |> {
     open Json.Decode
@@ -231,7 +257,10 @@ let handleUploadFileResponse = (oldValue, state, send, onChange, json) => {
       field("markdownEmbedCode", string)
     }
 
-    let insert = "\n" ++ (markdownEmbedCode ++ "\n")
+    switch parseEmbededCode(markdownEmbedCode) {
+    | EmbededFile(file) => onChange(DraftJs.EditorState.insertLink(state.editorState, file.filename, file.url))
+    | EmbededImage(file) => onChange(DraftJs.EditorState.insertLink(state.editorState, file.filename, file.url))
+    }
     send(FinishUploading)
   } else {
     send(SetUploadError(Some("Failed to attach file! " ++ (errors |> Js.Array.joinWith(", ")))))
@@ -434,6 +463,6 @@ let make = (
         </DisablingCover>
       </div>
     </div>
-    {footer(fileUpload, value, state, send, onChange)}
+    {footer(fileUpload, value, state, send, handleStateChange)}
   </div>
 }
