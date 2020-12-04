@@ -2,6 +2,7 @@ exception InvalidModeForPreview
 
 %bs.raw(`require("./WysiwygMarkdownEditor.css")`)
 %bs.raw(`require("draft-js/dist/Draft.css")`)
+//%bs.raw(`require("draft-js-linkify-plugin/lib/plugin.css")`)
 
 let markdownToEditorState = (value : string) => {
   let options = DraftJs.Markdown.markdownToDraftOptions
@@ -458,6 +459,7 @@ let make = (
               ariaLabel="Markdown editor"
               ?tabIndex
               ?placeholder
+              plugins=DraftJs.Plugins.setup
             />
           </div>
         </DisablingCover>

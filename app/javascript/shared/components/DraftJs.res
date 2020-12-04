@@ -187,10 +187,10 @@ module EditorState = {
   ]
   let decorator = CompositeDecorator.create(decoratorStrategies)
 
-  @bs.module("draft-js") @bs.scope("EditorState") external createEmpty: ('a) => t = "createEmpty"
-  let createEmpty = createEmpty(decorator)
-  @bs.module("draft-js") @bs.scope("EditorState") external createWithContent: (ContentState.t, 'a) => t = "createWithContent"
-  let createWithContent = (raw) => createWithContent(raw, decorator)
+  @bs.module("draft-js") @bs.scope("EditorState") external createEmpty: () => t = "createEmpty"
+  let createEmpty = createEmpty()
+  @bs.module("draft-js") @bs.scope("EditorState") external createWithContent: (ContentState.t) => t = "createWithContent"
+  let createWithContent = (raw) => createWithContent(raw)
   @bs.module("draft-js") @bs.scope("EditorState") external push: (t, ContentState.t, string) => t = "push"
   let push = (editorState: t, contentState: ContentState.t, changeType: string) => push(editorState, contentState, changeType)
   @bs.module("draft-js") @bs.scope("EditorState") external forceSelection: (t, SelectionState.t) => t = "forceSelection"
@@ -300,38 +300,50 @@ module Markdown = {
   let markdownToDraft  = (value, options) => markdownToDraft(value, options)
 }
 
+module Plugins = {
+  @bs.module("draft-js-linkify-plugin") external createLinkifyPlugin: () => Js.t<{.}> = "default"
+
+  let setup = [
+    createLinkifyPlugin(),
+  ]
+}
+
 module Editor = {
-  @bs.module("draft-js") @react.component
-  external make: (
-    ~id: string=?,
-    ~editorState: EditorState.t=?,
-    ~handleKeyCommand: string => bool,
-    ~onChange: Js.t<{.}> => unit,
-    ~ariaLabel: string=?,
-    ~tabIndex: int=?,
-    ~placeholder: string=?,
-  ) => React.element = "Editor";
-}
+  module JsEditor = {
+    @bs.module("draft-js-plugins-editor") @react.component
+    external make: (
+      ~id: string=?,
+      ~editorState: EditorState.t=?,
+      ~handleKeyCommand: string => bool,
+      ~onChange: Js.t<{.}> => unit,
+      ~ariaLabel: string=?,
+      ~tabIndex: int=?,
+      ~placeholder: string=?,
+      ~plugins: array<'a>,
+    ) => React.element = "default";
+  }
 
-@react.component
-let make =
-    (
-      ~id,
-      ~editorState,
-      ~handleKeyCommand,
-      ~onChange,
-      ~ariaLabel,
-      ~tabIndex=?,
-      ~placeholder=?,
-    ) =>  {
-  <Editor
-    id
-    editorState
-    handleKeyCommand
-    onChange
-    ariaLabel
-    ?tabIndex
-    ?placeholder
-  />
+  @react.component
+  let make =
+      (
+        ~id,
+        ~editorState,
+        ~handleKeyCommand,
+        ~onChange,
+        ~ariaLabel,
+        ~tabIndex=?,
+        ~placeholder=?,
+        ~plugins,
+      ) =>  {
+    <JsEditor
+      id
+      editorState
+      handleKeyCommand
+      onChange
+      ariaLabel
+      ?tabIndex
+      ?placeholder
+      plugins
+    />
+  }
 }
-

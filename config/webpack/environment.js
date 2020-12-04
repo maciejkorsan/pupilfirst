@@ -1,5 +1,6 @@
 const { environment } = require("@rails/webpacker");
 const erb = require('./loaders/erb')
+const styles= require('./loaders/styles')
 const webpack = require("webpack");
 const dotenv = require("dotenv");
 
@@ -20,4 +21,5 @@ environment.plugins.prepend(
 );
 
 environment.loaders.prepend('erb', erb)
+environment.loaders.prepend('styles', styles)
 module.exports = environment;
