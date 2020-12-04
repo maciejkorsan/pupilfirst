@@ -99,6 +99,20 @@ module CharacterMetadata = {
   let getEntity = (state: t) => getEntity(state)
 }
 
+module SelectionState = {
+  type t = Js.t<{.}>
+  @bs.module("draft-js") @bs.new external create: 'a => t = "SelectionState"
+
+  @bs.send external getStartKey: (t) => string = "getStartKey"
+  let getStartKey = (selection: t) => getStartKey(selection)
+
+  @bs.send external getAnchorOffset: (t) => int = "getAnchorOffset"
+  let getAnchorOffset = (selection: t) => getAnchorOffset(selection)
+
+  @bs.send external getAnchorKey: (t) => string = "getAnchorKey"
+  let getAnchorKey = (selection: t) => getAnchorKey(selection)
+}
+
 module ContentState = {
   type t = Js.t<{.}>
 
@@ -107,18 +121,28 @@ module ContentState = {
 
   @bs.send external getEntity: (t, string) => DraftEntityInstance.t = "getEntity"
   let getEntity = (state: t, key: string) => getEntity(state, key)
-}
 
-module SelectionState = {
-  type t = Js.t<{.}>
+  @bs.send external createEntity: (t, string, string, 'a) => t = "createEntity"
+  let createEntity = (state: t, entityType: string, mutability: string, data) => createEntity(state, entityType, mutability, data)
 
-  @bs.send external getStartKey: (t) => string = "getStartKey"
-  let getStartKey = (selection: t) => getStartKey(selection)
+  @bs.send external getLastCreatedEntityKey: (t) => string = "getLastCreatedEntityKey"
+  let getLastCreatedEntityKey = (state: t) => getLastCreatedEntityKey(state)
+
+  @bs.send external getSelectionAfter: (t) => SelectionState.t = "getSelectionAfter"
+  let getSelectionAfter = (state: t) => getSelectionAfter(state)
 }
 
 module CompositeDecorator = {
   type t = Js.t<{.}>
   @bs.module("draft-js") @bs.new external create: 'a => t = "CompositeDecorator"
+}
+
+module Modifier = {
+  @bs.module("draft-js") @bs.scope("Modifier") external applyEntity: (ContentState.t, SelectionState.t, string) => ContentState.t = "applyEntity"
+  let applyEntity = (contentState: ContentState.t, selectionState: SelectionState.t, entityKey: string) => applyEntity(contentState, selectionState, entityKey)
+
+  @bs.module("draft-js") @bs.scope("Modifier") external insertText: (ContentState.t, SelectionState.t, string) => ContentState.t = "insertText"
+  let insertText = (contentState: ContentState.t, targetRange: SelectionState.t, text: string) => insertText(contentState, targetRange, text)
 }
 
 module EditorState = {
@@ -167,6 +191,10 @@ module EditorState = {
   let createEmpty = createEmpty(decorator)
   @bs.module("draft-js") @bs.scope("EditorState") external createWithContent: (ContentState.t, 'a) => t = "createWithContent"
   let createWithContent = (raw) => createWithContent(raw, decorator)
+  @bs.module("draft-js") @bs.scope("EditorState") external push: (t, ContentState.t, string) => t = "push"
+  let push = (editorState: t, contentState: ContentState.t, changeType: string) => push(editorState, contentState, changeType)
+  @bs.module("draft-js") @bs.scope("EditorState") external forceSelection: (t, SelectionState.t) => t = "forceSelection"
+  let forceSelection = (editorState: t, selection: SelectionState.t) => forceSelection(editorState, selection)
 
   @bs.send external getCurrentContent: (t) => ContentState.t = "getCurrentContent"
   let getCurrentContent = (state: t) => getCurrentContent(state)
@@ -176,6 +204,50 @@ module EditorState = {
 
   @bs.send external getCurrentInlineStyle: (t) => string = "getCurrentInlineStyle"
   let getCurrentInlineStyle = (state: t) => getCurrentInlineStyle(state)
+
+
+  let insertLink = (state: t, text: string, url: string) => {
+    let contentState = getCurrentContent(state)
+    let selection = getSelection(state)
+    // create new content with text
+    let newContent = Modifier.insertText(
+      contentState,
+      selection,
+      text,
+    )
+    // create new link entity
+    let newContentWithEntity = ContentState.createEntity(newContent,
+      "LINK",
+      "MUTABLE",
+      {"url": url},
+    )
+    let entityKey = ContentState.getLastCreatedEntityKey(newContentWithEntity)
+    // create new selection with the inserted text
+    let anchorOffset = SelectionState.getAnchorOffset(selection)
+    let anchorKey = SelectionState.getAnchorKey(selection)
+    let textLength = Js.String.length(text)
+    let newSelection = SelectionState.create({
+      "anchorKey": anchorKey,
+      "anchorOffset": anchorOffset,
+      "focusKey": anchorKey,
+      "focusOffset": anchorOffset + textLength,
+    });
+    // and aply link entity to the inserted text
+    let newContentWithLink = Modifier.applyEntity(
+      newContentWithEntity,
+      newSelection,
+      entityKey,
+    );
+    // create new state with link text
+    let withLinkText = push(
+      state,
+      newContentWithLink,
+      "insert-characters",
+    );
+    // now lets add cursor right after the inserted link
+    let selectionAfter = ContentState.getSelectionAfter(newContent)
+    forceSelection(withLinkText, selectionAfter)
+  };
 }
 
 module RawDraftContentState = {
