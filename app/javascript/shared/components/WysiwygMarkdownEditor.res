@@ -246,7 +246,7 @@ let parseEmbededCode = (code) => {
   }
 }
 
-let handleUploadFileResponse = (oldValue, state, send, onChange, json) => {
+let handleUploadFileResponse = (state, send, onChange, json) => {
   let errors = json |> {
     open Json.Decode
     field("errors", array(string))
@@ -268,14 +268,14 @@ let handleUploadFileResponse = (oldValue, state, send, onChange, json) => {
   }
 }
 
-let submitForm = (formId, oldValue, state, send, onChange) =>
+let submitForm = (formId, state, send, onChange) =>
   ReactDOMRe._getElementById(formId) |> OptionUtils.mapWithDefault(element => {
     let formData = DomUtils.FormData.create(element)
 
     Api.sendFormData(
       "/markdown_attachments/",
       formData,
-      handleUploadFileResponse(oldValue, state, send, onChange),
+      handleUploadFileResponse(state, send, onChange),
       () =>
         send(
           SetUploadError(
@@ -285,7 +285,7 @@ let submitForm = (formId, oldValue, state, send, onChange) =>
     )
   }, ())
 
-let attachFile = (fileFormId, oldValue, state, send, onChange, event) =>
+let attachFile = (fileFormId, state, send, onChange, event) =>
   switch ReactEvent.Form.target(event)["files"] {
   | [] => ()
   | files =>
@@ -301,7 +301,7 @@ let attachFile = (fileFormId, oldValue, state, send, onChange, event) =>
     | Some(_) => send(SetUploadError(error))
     | None =>
       send(SetUploading)
-      submitForm(fileFormId, oldValue, state, send, onChange)
+      submitForm(fileFormId, state, send, onChange)
     }
   }
 
@@ -312,7 +312,7 @@ let footerContainerClasses = mode =>
   | Fullscreen => "border-gray-400"
   }
 
-let footer = (fileUpload, oldValue, state, send, onChange) => {
+let footer = (fileUpload, state, send, onChange) => {
   let {id} = state
   let fileFormId = id ++ "-file-form"
   let fileInputId = id ++ "-file-input"
@@ -328,7 +328,7 @@ let footer = (fileUpload, oldValue, state, send, onChange) => {
         name="markdown_attachment[file]"
         id=fileInputId
         multiple=false
-        onChange={attachFile(fileFormId, oldValue, state, send, onChange)}
+        onChange={attachFile(fileFormId, state, send, onChange)}
       />
       {switch state.uploadState {
       | ReadyToUpload(error) =>
@@ -465,6 +465,6 @@ let make = (
         </DisablingCover>
       </div>
     </div>
-    {footer(fileUpload, value, state, send, handleStateChange)}
+    {footer(fileUpload, state, send, handleStateChange)}
   </div>
 }
