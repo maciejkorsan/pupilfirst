@@ -3,6 +3,7 @@ exception InvalidModeForPreview
 %bs.raw(`require("./WysiwygMarkdownEditor.css")`)
 %bs.raw(`require("draft-js/dist/Draft.css")`)
 //%bs.raw(`require("draft-js-linkify-plugin/lib/plugin.css")`)
+//%bs.raw(`require("draft-js-image-plugin/lib/plugin.css")`)
 
 let markdownToEditorState = (value : string) => {
   let options = DraftJs.Markdown.markdownToDraftOptions

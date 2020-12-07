@@ -259,10 +259,12 @@ module Markdown = {
 module Plugins = {
   @bs.module("draft-js-linkify-plugin") external createLinkifyPlugin: () => Js.t<{.}> = "default"
   @bs.module("draft-js-markdown-shortcuts-plugin") external createMarkdownShortcutsPlugin: () => Js.t<{.}> = "default"
+  @bs.module("draft-js-image-plugin") external createImagePlugin: () => Js.t<{.}> = "default"
 
   let setup = [
     createLinkifyPlugin(),
     createMarkdownShortcutsPlugin(),
+    createImagePlugin(),
   ]
 }
 
