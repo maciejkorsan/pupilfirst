@@ -132,11 +132,6 @@ module ContentState = {
   let getSelectionAfter = (state: t) => getSelectionAfter(state)
 }
 
-module CompositeDecorator = {
-  type t = Js.t<{.}>
-  @bs.module("draft-js") @bs.new external create: 'a => t = "CompositeDecorator"
-}
-
 module Modifier = {
   @bs.module("draft-js") @bs.scope("Modifier") external applyEntity: (ContentState.t, SelectionState.t, string) => ContentState.t = "applyEntity"
   let applyEntity = (contentState: ContentState.t, selectionState: SelectionState.t, entityKey: string) => applyEntity(contentState, selectionState, entityKey)
@@ -147,45 +142,6 @@ module Modifier = {
 
 module EditorState = {
   type t = Js.t<{.}>
-
-  type decoratorParams = {
-    contentState: ContentState.t,
-    entityKey: string,
-    children: React.element,
-  }
-
-  let findLinkEntities = (contentBlock, callback, contentState) => {
-    let isLink = (state, key) => {
-      let entity = ContentState.getEntity(state, key)
-      let entityType = DraftEntityInstance.getType(entity)
-      entityType === "LINK"
-    }
-
-    let filterFn = (state, character) => {
-      let entityKey = CharacterMetadata.getEntity(character)
-
-      switch Js.Nullable.toOption(entityKey) {
-      | Some(key) => isLink(state, key)
-      | _ => false
-      }
-    }
-
-    ContentBlock.findEntityRanges(contentBlock, filterFn(contentState), callback)
-  }
-
-  let link = (props: decoratorParams) => {
-    let entity = ContentState.getEntity(props.contentState, props.entityKey)
-    let data = DraftEntityInstance.getData(entity)
-    <a href={data.url}>props.children</a>
-  }
-
-  let decoratorStrategies = [
-    {
-      "strategy": findLinkEntities,
-      "component": link,
-    },
-  ]
-  let decorator = CompositeDecorator.create(decoratorStrategies)
 
   @bs.module("draft-js") @bs.scope("EditorState") external createEmpty: () => t = "createEmpty"
   let createEmpty = createEmpty()
