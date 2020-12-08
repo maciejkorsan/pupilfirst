@@ -147,6 +147,8 @@ module EditorState = {
   let createEmpty = createEmpty()
   @bs.module("draft-js") @bs.scope("EditorState") external createWithContent: (ContentState.t) => t = "createWithContent"
   let createWithContent = (raw) => createWithContent(raw)
+  @bs.module("draft-js") @bs.scope("EditorState") external set: (t, 'a) => t = "set"
+  let set = (editorState: t, contentState: ContentState.t) => set(editorState, {"currentContent": contentState})
   @bs.module("draft-js") @bs.scope("EditorState") external push: (t, ContentState.t, string) => t = "push"
   let push = (editorState: t, contentState: ContentState.t, changeType: string) => push(editorState, contentState, changeType)
   @bs.module("draft-js") @bs.scope("EditorState") external forceSelection: (t, SelectionState.t) => t = "forceSelection"
@@ -161,6 +163,8 @@ module EditorState = {
   @bs.send external getCurrentInlineStyle: (t) => string = "getCurrentInlineStyle"
   let getCurrentInlineStyle = (state: t) => getCurrentInlineStyle(state)
 
+  @bs.module("draft-js") @bs.scope("AtomicBlockUtils") external insertAtomicBlock: (t, string, string) => t = "insertAtomicBlock"
+  let insertAtomicBlock = (state: t, entityKey: string, character: string) => insertAtomicBlock(state, entityKey, character)
 
   let insertLink = (state: t, text: string, url: string) => {
     let contentState = getCurrentContent(state)
@@ -204,6 +208,19 @@ module EditorState = {
     let selectionAfter = ContentState.getSelectionAfter(newContent)
     forceSelection(withLinkText, selectionAfter)
   };
+
+  let insertImage = (state: t, alt: string, url: string) => {
+    let contentState = getCurrentContent(state)
+    // create new content with image
+    let newContent = ContentState.createEntity(contentState,
+      "IMAGE",
+      "IMMUTABLE",
+      {"alt": alt, "src": url},
+    )
+    let entityKey = ContentState.getLastCreatedEntityKey(newContent)
+    let newState = set(state, newContent)
+    insertAtomicBlock(newState, entityKey, " ")
+  };
 }
 
 module RawDraftContentState = {
@@ -232,8 +249,20 @@ let convertFromRaw  = (value) => convertFromRaw(value)
 
 
 module Markdown = {
+  type imageSource = {
+    alt: string,
+    src: string
+  }
+  type imageEntity = {
+    data: imageSource,
+  }
   let draftToMarkdownOptions = {
-    "styleItems": ()
+    "entityItems": {
+      "IMAGE": {
+        "open": () => "",
+        "close": (entity: imageEntity) => "![" ++ entity.data.alt ++ "](" ++ entity.data.src ++ ")",
+      },
+    },
   }
 
   @bs.module("markdown-draft-js") external draftToMarkdown: (RawDraftContentState.t, 'a) => string = "draftToMarkdown"
@@ -242,6 +271,13 @@ module Markdown = {
   let markdownToDraftOptions = {
     "blockStyles": {
       "del_open": "STRIKETHROUGH",
+    },
+    "blockEntities": {
+      "image": (item: imageSource) => {
+        "type": "atomic",
+        "mutability": "IMMUTABLE",
+        "data": { "src": item.src, "alt": item.alt },
+      },
     },
     "remarkablePreset": "commonmark",
     "remarkableOptions": {

@@ -7,7 +7,7 @@ exception InvalidModeForPreview
 
 let markdownToEditorState = (value : string) => {
   let options = DraftJs.Markdown.markdownToDraftOptions
-  Js.log({"options": options, "markdown": value})
+  Js.log({"load": value})
   value
     -> DraftJs.Markdown.markdownToDraft(options)
     -> DraftJs.convertFromRaw
@@ -261,7 +261,7 @@ let handleUploadFileResponse = (state, send, onChange, json) => {
 
     switch parseEmbededCode(markdownEmbedCode) {
     | EmbededFile(file) => onChange(DraftJs.EditorState.insertLink(state.editorState, file.filename, file.url))
-    | EmbededImage(file) => onChange(DraftJs.EditorState.insertLink(state.editorState, file.filename, file.url))
+    | EmbededImage(file) => onChange(DraftJs.EditorState.insertImage(state.editorState, file.filename, file.url))
     }
     send(FinishUploading)
   } else {
@@ -387,7 +387,7 @@ let onChangeWrapper = (send, onChange, editorState) => {
     -> DraftJs.EditorState.getCurrentContent
     -> DraftJs.convertToRaw
     -> DraftJs.Markdown.draftToMarkdown(options)
-  Js.log({"options": options, "markdown": markdown})
+  Js.log({"store": markdown})
   onChange(markdown)
 }
 
