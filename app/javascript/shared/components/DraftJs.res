@@ -296,11 +296,14 @@ module Plugins = {
   @bs.module("draft-js-linkify-plugin") external createLinkifyPlugin: () => Js.t<{.}> = "default"
   @bs.module("draft-js-markdown-shortcuts-plugin") external createMarkdownShortcutsPlugin: () => Js.t<{.}> = "default"
   @bs.module("draft-js-image-plugin") external createImagePlugin: () => Js.t<{.}> = "default"
+  @bs.module("draft-js-prism-plugin") external createPrismPlugin: ('a) => Js.t<{.}> = "default"
+  @bs.module external prism: Js.t<{.}> = "prismjs"
 
   let setup = [
     createLinkifyPlugin(),
     createMarkdownShortcutsPlugin(),
     createImagePlugin(),
+    createPrismPlugin({"prism": prism}),
   ]
 }
 
