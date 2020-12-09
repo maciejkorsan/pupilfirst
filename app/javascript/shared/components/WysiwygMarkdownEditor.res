@@ -177,11 +177,6 @@ let controls = (state, profile,  handleStateChange, send) => {
             onClick={_ => curriedModifyBlockStyle(CodeBlock)}>
             <i className="fas fa-code fa-fw" />
           </button>
-          <button
-            className={buttonClasses ++ "border-l border-gray-400"}
-            onClick={_ => curriedModifyBlockStyle(Unstyled)}>
-            <i className="fas fa-remove-format fa-fw" />
-          </button>
         </div>
        | _ => React.null
     }}
