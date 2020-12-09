@@ -155,17 +155,17 @@ let controls = (state, profile,  handleStateChange, send) => {
           <button
             className={buttonClasses ++ "border-l border-gray-400"}
             onClick={_ => curriedModifyBlockStyle(H1)}>
-            <i className="fas fa-h1 fa-fw" />
+            <strong>{ "H1" |> str }</strong>
           </button>
           <button
             className={buttonClasses ++ "border-l border-gray-400"}
             onClick={_ => curriedModifyBlockStyle(H2)}>
-            <i className="fas fa-h2 fa-fw" />
+            <strong>{ "H2" |> str }</strong>
           </button>
           <button
             className={buttonClasses ++ "border-l border-gray-400"}
             onClick={_ => curriedModifyBlockStyle(H3)}>
-            <i className="fas fa-h3 fa-fw" />
+            <strong>{ "H3" |> str }</strong>
           </button>
           <button
             className={buttonClasses ++ "border-l border-gray-400"}
