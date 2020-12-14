@@ -19,7 +19,7 @@ module Devise
           user.update!(api_token_digest: digested_token(token, school))
           success!(school_admin.user)
         else
-          fail!
+          fail
         end
       end
 
