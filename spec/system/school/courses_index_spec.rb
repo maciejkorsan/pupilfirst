@@ -4,6 +4,7 @@ feature 'Courses Index', js: true do
   include UserSpecHelper
   include NotificationHelper
   include MarkdownEditorHelper
+  include WithEnvHelper
 
   # Setup a course with a single founder target, ...
   let!(:school) { create :school, :current }
@@ -20,7 +21,11 @@ feature 'Courses Index', js: true do
   end
 
   around do |example|
-    Time.use_zone(school_admin.user.time_zone) { example.run }
+    Time.use_zone(school_admin.user.time_zone) {
+      with_env('ONLY_KEYCLOAK' => 'false') {
+        example.run
+      }
+    }
   end
 
   scenario 'School admin creates a course' do
