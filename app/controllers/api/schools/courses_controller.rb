@@ -2,7 +2,6 @@ module Api
   module Schools
     class CoursesController < SchoolsController
       skip_before_action :verify_authenticity_token
-      before_action :authenticate_user!
       before_action :set_course, only: [:students, :create_students]
 
       def students
