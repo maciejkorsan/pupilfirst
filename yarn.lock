@@ -8093,6 +8093,13 @@ dotenv@^8.0.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.2.0.tgz#97e619259ada750eea3e4ea3e26bceea5424b16a"
   integrity sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
 
+draft-js-block-breakout-plugin@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/draft-js-block-breakout-plugin/-/draft-js-block-breakout-plugin-2.0.1.tgz#a38e3bd68d9538d7af15d4d966844d6e6d2ad850"
+  integrity sha1-o4471o2VONevFdTZZoRNbm0q2FA=
+  dependencies:
+    immutable "~3.7.4"
+
 draft-js-checkable-list-item@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/draft-js-checkable-list-item/-/draft-js-checkable-list-item-3.0.4.tgz#b3049a56499757720cdcbf3775d0384464ad0030"
