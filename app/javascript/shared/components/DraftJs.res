@@ -72,7 +72,7 @@ module ContentBlock = {
   type t = Js.t<{.}>
 
   @bs.send external getType: (t) => string = "getType"
-  let getType = (block: t) => getType(block)
+  let getType = (block: t) => parseBlockType(getType(block))
 
   @bs.send external findEntityRanges: (t, 'a, 'a) => unit = "findEntityRanges"
   let findEntityRanges = (block: t, filterFn, callback) => findEntityRanges(block, filterFn, callback)
