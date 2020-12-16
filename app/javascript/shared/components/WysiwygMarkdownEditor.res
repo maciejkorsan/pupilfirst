@@ -146,7 +146,7 @@ let controls = (state, profile,  handleStateChange, send) => {
         </button>
       </div>
       {switch profile {
-       | Markdown.Permissive =>
+       | Markdown.Permissive => <>
         <div className="bg-white border border-gray-400 rounded-t border-b-0 ml-2">
           <button
             className={buttonClasses ++ activeBlock(DraftJs.Unstyled) ++ activeBlock(DraftJs.Paragraph)}
@@ -179,6 +179,19 @@ let controls = (state, profile,  handleStateChange, send) => {
             <i className="fas fa-code fa-fw" />
           </button>
         </div>
+        <div className="bg-white border border-gray-400 rounded-t border-b-0 ml-2">
+          <button
+            className={buttonClasses ++ activeBlock(DraftJs.UL)}
+            onClick={_ => curriedModifyBlockStyle(UL)}>
+            <i className="fas fa-list-ul fa-fw" />
+          </button>
+          <button
+            className={buttonClasses ++ activeBlock(DraftJs.OL) ++ "border-l border-gray-400"}
+            onClick={_ => curriedModifyBlockStyle(OL)}>
+            <i className="fas fa-list-ol fa-fw" />
+          </button>
+        </div>
+       </>
        | _ => React.null
     }}
     </div>
