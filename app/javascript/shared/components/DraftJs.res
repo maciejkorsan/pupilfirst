@@ -208,19 +208,6 @@ module EditorState = {
     let selectionAfter = ContentState.getSelectionAfter(newContent)
     forceSelection(withLinkText, selectionAfter)
   };
-
-  let insertImage = (state: t, alt: string, url: string) => {
-    let contentState = getCurrentContent(state)
-    // create new content with image
-    let newContent = ContentState.createEntity(contentState,
-      "IMAGE",
-      "IMMUTABLE",
-      {"alt": alt, "src": url},
-    )
-    let entityKey = ContentState.getLastCreatedEntityKey(newContent)
-    let newState = set(state, newContent)
-    insertAtomicBlock(newState, entityKey, " ")
-  };
 }
 
 module RawDraftContentState = {
@@ -249,21 +236,7 @@ let convertFromRaw  = (value) => convertFromRaw(value)
 
 
 module Markdown = {
-  type imageSource = {
-    alt: string,
-    src: string
-  }
-  type imageEntity = {
-    data: imageSource,
-  }
-  let draftToMarkdownOptions = {
-    "entityItems": {
-      "IMAGE": {
-        "open": () => "",
-        "close": (entity: imageEntity) => "![" ++ entity.data.alt ++ "](" ++ entity.data.src ++ ")",
-      },
-    },
-  }
+  let draftToMarkdownOptions = ()
 
   @bs.module("markdown-draft-js") external draftToMarkdown: (RawDraftContentState.t, 'a) => string = "draftToMarkdown"
   let draftToMarkdown  = (value, options) => draftToMarkdown(value, options)
@@ -272,18 +245,11 @@ module Markdown = {
     "blockStyles": {
       "del_open": "STRIKETHROUGH",
     },
-    "blockEntities": {
-      "image": (item: imageSource) => {
-        "type": "atomic",
-        "mutability": "IMMUTABLE",
-        "data": { "src": item.src, "alt": item.alt },
-      },
-    },
     "remarkablePreset": "commonmark",
     "remarkableOptions": {
       "enable": {
         "core":  ["abbr"],
-        "block": ["table"],
+        "block": "table",
         "inline": ["links", "emphasis", "del"],
       }
     }
@@ -295,7 +261,6 @@ module Markdown = {
 module Plugins = {
   @bs.module("draft-js-linkify-plugin") external createLinkifyPlugin: () => Js.t<{.}> = "default"
   @bs.module("draft-js-markdown-shortcuts-plugin") external createMarkdownShortcutsPlugin: () => Js.t<{.}> = "default"
-  @bs.module("draft-js-image-plugin") external createImagePlugin: () => Js.t<{.}> = "default"
   @bs.module("draft-js-block-breakout-plugin") external createBlockBreakoutPlugin: () => Js.t<{.}> = "default"
   @bs.module("draft-js-prism-plugin") external createPrismPlugin: ('a) => Js.t<{.}> = "default"
   @bs.module external prism: Js.t<{.}> = "prismjs"
@@ -303,7 +268,6 @@ module Plugins = {
   let setup = [
     createLinkifyPlugin(),
     createMarkdownShortcutsPlugin(),
-    createImagePlugin(),
     createBlockBreakoutPlugin(),
     createPrismPlugin({"prism": prism}),
   ]

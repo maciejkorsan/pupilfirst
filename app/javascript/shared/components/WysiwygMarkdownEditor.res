@@ -21,24 +21,15 @@ type mode =
   | Fullscreen
   | Windowed
 
-type rec uploadState =
-  | Uploading
-  | ReadyToUpload(uploadError)
-and uploadError = option<string>
-
 type state = {
   id: string,
   mode: mode,
   editorState: DraftJs.EditorState.t,
-  uploadState: uploadState,
 }
 
 type action =
   | ClickFullscreen
   | PressEscapeKey
-  | SetUploadError(uploadError)
-  | SetUploading
-  | FinishUploading
   | SetEditorState(DraftJs.EditorState.t)
 
 let reducer = (state, action) =>
@@ -56,9 +47,6 @@ let reducer = (state, action) =>
       Windowed
     }
     {...state, mode: mode}
-  | SetUploadError(error) => {...state, uploadState: ReadyToUpload(error)}
-  | SetUploading => {...state, uploadState: Uploading}
-  | FinishUploading => {...state, uploadState: ReadyToUpload(None)}
   | SetEditorState(editorState) => {...state, editorState: editorState}
   }
 
@@ -70,7 +58,7 @@ let computeInitialState = ((value, textareaId, mode)) => {
 
   let editorState = markdownToEditorState(value)
 
-  {id: id, mode: mode, editorState: editorState, uploadState: ReadyToUpload(None)}
+  {id: id, mode: mode, editorState: editorState}
 }
 
 let containerClasses = mode =>
@@ -95,13 +83,6 @@ let onClickFullscreen = (state, send, _event) => {
   }
 
   send(ClickFullscreen)
-}
-
-let insertAt = (textToInsert, position, sourceText) => {
-  let head = sourceText->String.sub(0, position)
-  let tail = sourceText->String.sub(position, (sourceText |> String.length) - position)
-
-  head ++ (textToInsert ++ tail)
 }
 
 let modifyInlineStyle = (editorState, handleStateChange, inlineStyle: DraftJs.inlineStyle) => {
@@ -217,91 +198,6 @@ let focusOnEditor = id => {
   |> OptionUtils.mapWithDefault(element => element |> HtmlElement.focus, ())
 }
 
-type embeddedFile = {
-  filename: string,
-  url: string
-}
-
-let parseEmbedFile = (code) => {
-  let lenght = Js.String.length(code)
-  let withOuterBracketsRemoved = Js.String2.substring(code, ~from=1, ~to_=lenght-1)
-  let parts = Js.String2.split(withOuterBracketsRemoved, "](")
-  {
-    filename: parts[0],
-    url:      parts[1],
-  }
-}
-
-type embedCode =
-  | EmbededFile(embeddedFile)
-  | EmbededImage(embeddedFile)
-
-let parseEmbededCode = (code) => {
-  switch Js.String2.startsWith(code, "!") {
-  | true => EmbededImage(parseEmbedFile(Js.String2.substringToEnd(code, ~from=1)))
-  | false => EmbededFile(parseEmbedFile(code))
-  }
-}
-
-let handleUploadFileResponse = (state, send, onChange, json) => {
-  let errors = json |> {
-    open Json.Decode
-    field("errors", array(string))
-  }
-
-  if errors == [] {
-    let markdownEmbedCode = json |> {
-      open Json.Decode
-      field("markdownEmbedCode", string)
-    }
-
-    switch parseEmbededCode(markdownEmbedCode) {
-    | EmbededFile(file) => onChange(DraftJs.EditorState.insertLink(state.editorState, file.filename, file.url))
-    | EmbededImage(file) => onChange(DraftJs.EditorState.insertImage(state.editorState, file.filename, file.url))
-    }
-    send(FinishUploading)
-  } else {
-    send(SetUploadError(Some("Failed to attach file! " ++ (errors |> Js.Array.joinWith(", ")))))
-  }
-}
-
-let submitForm = (formId, state, send, onChange) =>
-  ReactDOMRe._getElementById(formId) |> OptionUtils.mapWithDefault(element => {
-    let formData = DomUtils.FormData.create(element)
-
-    Api.sendFormData(
-      "/markdown_attachments/",
-      formData,
-      handleUploadFileResponse(state, send, onChange),
-      () =>
-        send(
-          SetUploadError(
-            Some("An unexpected error occured! Please reload the page before trying again."),
-          ),
-        ),
-    )
-  }, ())
-
-let attachFile = (fileFormId, state, send, onChange, event) =>
-  switch ReactEvent.Form.target(event)["files"] {
-  | [] => ()
-  | files =>
-    let file = files[0]
-    let maxFileSize = 5 * 1024 * 1024
-
-    let error =
-      file["size"] > maxFileSize
-        ? Some("The maximum file size is 5 MB. Please select another file.")
-        : None
-
-    switch error {
-    | Some(_) => send(SetUploadError(error))
-    | None =>
-      send(SetUploading)
-      submitForm(fileFormId, state, send, onChange)
-    }
-  }
-
 let footerContainerClasses = mode =>
   "markdown-editor__footer-container border bg-gray-100 flex justify-end items-center " ++
   switch mode {
@@ -309,45 +205,8 @@ let footerContainerClasses = mode =>
   | Fullscreen => "border-gray-400"
   }
 
-let footer = (fileUpload, state, send, onChange) => {
-  let {id} = state
-  let fileFormId = id ++ "-file-form"
-  let fileInputId = id ++ "-file-input"
-
+let footer = (state) => {
   <div className={footerContainerClasses(state.mode)}>
-    {<form
-      className="flex items-center flex-wrap flex-1 text-sm font-semibold hover:bg-gray-300 hover:text-primary-500"
-      id=fileFormId>
-      <input name="authenticity_token" type_="hidden" value={AuthenticityToken.fromHead()} />
-      <input
-        className="hidden"
-        type_="file"
-        name="markdown_attachment[file]"
-        id=fileInputId
-        multiple=false
-        onChange={attachFile(fileFormId, state, send, onChange)}
-      />
-      {switch state.uploadState {
-      | ReadyToUpload(error) =>
-        <label className="text-xs px-3 py-2 flex-grow cursor-pointer" htmlFor=fileInputId>
-          {switch error {
-          | Some(error) =>
-            <span className="text-red-500">
-              <i className="fas fa-exclamation-triangle mr-2" /> {error |> str}
-            </span>
-          | None =>
-            <span>
-              <i className="far fa-file-image mr-2" /> {"Click here to attach a file." |> str}
-            </span>
-          }}
-        </label>
-      | Uploading =>
-        <span className="text-xs px-3 py-2 flex-grow cursor-wait">
-          <i className="fas fa-spinner fa-pulse mr-2" />
-          {"Please wait for the file to upload..." |> str}
-        </span>
-      }}
-    </form>->ReactUtils.nullUnless(fileUpload)}
     <a
       href="/help/markdown_editor"
       target="_blank"
@@ -357,6 +216,7 @@ let footer = (fileUpload, state, send, onChange) => {
     </a>
   </div>
 }
+
 
 let textareaClasses = mode =>
   "w-full outline-none font-mono " ++
@@ -403,7 +263,7 @@ let make = (
   ~defaultMode=Windowed,
   ~placeholder=?,
   ~tabIndex=?,
-  ~fileUpload=true,
+  ~fileUpload=false,
 ) => {
   let (state, send) = React.useReducerWithMapState(
     reducer,
@@ -443,25 +303,20 @@ let make = (
     {controls(state, profile, handleStateChange, send)}
     <div className={modeClasses(state.mode)}>
       <div className={editorContainerClasses(state.mode)}>
-        <DisablingCover
-          containerClasses="h-full"
-          disabled={state.uploadState == Uploading}
-          message="Uploading...">
-          <div className={MarkdownBlock.markdownBlockClasses(profile, Some(textareaClasses(state.mode)))}>
-            <DraftJs.Editor
-              id=state.id
-              editorState=state.editorState
-              handleKeyCommand={(command) => onHandleKeyCommand(handleStateChange, state.editorState, command)}
-              onChange={(state) => handleStateChange(state)}
-              ariaLabel="Markdown editor"
-              ?tabIndex
-              ?placeholder
-              plugins=DraftJs.Plugins.setup
-            />
-          </div>
-        </DisablingCover>
+        <div className={MarkdownBlock.markdownBlockClasses(profile, Some(textareaClasses(state.mode)))}>
+          <DraftJs.Editor
+            id=state.id
+            editorState=state.editorState
+            handleKeyCommand={(command) => onHandleKeyCommand(handleStateChange, state.editorState, command)}
+            onChange={(state) => handleStateChange(state)}
+            ariaLabel="Markdown editor"
+            ?tabIndex
+            ?placeholder
+            plugins=DraftJs.Plugins.setup
+          />
+        </div>
       </div>
     </div>
-    {footer(fileUpload, state, send, handleStateChange)}
+    {footer(state)}
   </div>
 }
