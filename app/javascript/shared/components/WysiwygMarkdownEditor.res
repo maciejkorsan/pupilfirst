@@ -107,11 +107,7 @@ let controls = (state, profile,  handleStateChange, send) => {
   let curriedModifyBlockStyle  = modifyBlockStyle(editorState, handleStateChange)
 
   let styles = DraftJs.EditorState.getCurrentInlineStyle(editorState)
-  let selection = DraftJs.EditorState.getSelection(editorState)
-  let startKey = DraftJs.SelectionState.getStartKey(selection)
-  let currentContent = DraftJs.EditorState.getCurrentContent(editorState)
-  let currentBlock = DraftJs.ContentState.getBlockForKey(currentContent, startKey)
-  let currentBlockType = DraftJs.ContentBlock.getType(currentBlock)
+  let currentBlockType = DraftJs.RichUtils.getCurrentBlockType(editorState)
 
   let activeStyle = (inlineStyle) => {
     switch DraftJs.DraftInlineStyle.has(styles, inlineStyle) {

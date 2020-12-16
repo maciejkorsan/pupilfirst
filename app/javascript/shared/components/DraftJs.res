@@ -231,8 +231,11 @@ module RichUtils = {
   @bs.module("draft-js") @bs.scope("RichUtils") external toggleBlockType: (EditorState.t, string) => EditorState.t = "toggleBlockType"
   let toggleBlockType = (state, blockType) => toggleBlockType(state, blockTypeString(blockType))
 
-  @bs.module("draft-js") @bs.scope("RichUtils") external getCurrentBlockType: (EditorState.t, string) => string = "getCurrentBlockType"
-  let getCurrentBlockType = (state) => getCurrentBlockType(state)
+  @bs.module("draft-js") @bs.scope("RichUtils") external getCurrentBlockType: (EditorState.t) => string = "getCurrentBlockType"
+  let getCurrentBlockType = (state) => parseBlockType(getCurrentBlockType(state))
+
+  @bs.module("draft-js") @bs.scope("RichUtils") external currentBlockContainsLink: (EditorState.t) => bool = "currentBlockContainsLink"
+  let currentBlockContainsLink = (editorState: EditorState.t) => currentBlockContainsLink(editorState)
 }
 
 @bs.module("draft-js") external convertToRaw: (ContentState.t) => RawDraftContentState.t = "convertToRaw"
