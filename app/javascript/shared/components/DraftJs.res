@@ -140,6 +140,13 @@ module Modifier = {
   let insertText = (contentState: ContentState.t, targetRange: SelectionState.t, text: string) => insertText(contentState, targetRange, text)
 }
 
+module DraftInlineStyle = {
+  type t = Js.t<{.}>
+
+  @bs.send external has: (t, string) => bool = "has"
+  let has = (styleSet: t, style: inlineStyle) => has(styleSet, inlineStyleString(style))
+}
+
 module EditorState = {
   type t = Js.t<{.}>
 
@@ -160,7 +167,7 @@ module EditorState = {
   @bs.send external getSelection: (t) => SelectionState.t = "getSelection"
   let getSelection = (state: t) => getSelection(state)
 
-  @bs.send external getCurrentInlineStyle: (t) => string = "getCurrentInlineStyle"
+  @bs.send external getCurrentInlineStyle: (t) => DraftInlineStyle.t = "getCurrentInlineStyle"
   let getCurrentInlineStyle = (state: t) => getCurrentInlineStyle(state)
 
   @bs.module("draft-js") @bs.scope("AtomicBlockUtils") external insertAtomicBlock: (t, string, string) => t = "insertAtomicBlock"

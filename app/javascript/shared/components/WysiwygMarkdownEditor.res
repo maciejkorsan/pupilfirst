@@ -105,22 +105,29 @@ let controls = (state, profile,  handleStateChange, send) => {
   let {editorState, mode} = state
   let curriedModifyInlineStyle = modifyInlineStyle(editorState, handleStateChange)
   let curriedModifyBlockStyle  = modifyBlockStyle(editorState, handleStateChange)
+  let activeStyle = (inlineStyle) => {
+    let styles = DraftJs.EditorState.getCurrentInlineStyle(editorState)
+    switch DraftJs.DraftInlineStyle.has(styles, inlineStyle) {
+    | true  => "bg-gray-200 "
+    | false => ""
+    }
+  }
 
   <div className={controlsContainerClasses(state.mode)}>
     <div className="flex">
       <div className="bg-white border border-gray-400 rounded-t border-b-0">
         <button
-          className=buttonClasses
+          className={buttonClasses ++ activeStyle(DraftJs.Bold)}
           onClick={_ => curriedModifyInlineStyle(Bold)}>
           <i className="fas fa-bold fa-fw" />
         </button>
         <button
-          className={buttonClasses ++ "border-l border-gray-400"}
+          className={buttonClasses ++ activeStyle(DraftJs.Italic) ++ "border-l border-gray-400"}
           onClick={_ => curriedModifyInlineStyle(Italic)}>
           <i className="fas fa-italic fa-fw" />
         </button>
         <button
-          className={buttonClasses ++ "border-l border-gray-400"}
+          className={buttonClasses ++ activeStyle(DraftJs.Strikethrough) ++ "border-l border-gray-400"}
           onClick={_ => curriedModifyInlineStyle(Strikethrough)}>
           <i className="fas fa-strikethrough fa-fw" />
         </button>
