@@ -146,6 +146,7 @@ let controlsContainerClasses = mode =>
 
 let controls = (state, profile,  handleStateChange, send) => {
   let buttonClasses = "px-2 py-1 hover:bg-gray-300 hover:text-primary-500 focus:outline-none "
+  let buttonWithLeftBorderClasses = buttonClasses ++ "border-l border-gray-400 "
   let {editorState, mode, linkState} = state
   let curriedModifyInlineStyle = modifyInlineStyle(editorState, handleStateChange)
   let curriedModifyBlockStyle  = modifyBlockStyle(editorState, handleStateChange)
@@ -167,7 +168,7 @@ let controls = (state, profile,  handleStateChange, send) => {
     }
   }
   let activeLink = (inEditMode) => {
-    switch inEditMode || DraftJs.RichUtils.currentBlockContainsLink(editorState) {
+    switch inEditMode {
     | true  => "bg-gray-200 "
     | false => ""
     }
@@ -182,12 +183,12 @@ let controls = (state, profile,  handleStateChange, send) => {
           <i className="fas fa-bold fa-fw" />
         </button>
         <button
-          className={buttonClasses ++ activeStyle(DraftJs.Italic) ++ "border-l border-gray-400"}
+          className={buttonWithLeftBorderClasses ++ activeStyle(DraftJs.Italic)}
           onClick={_ => curriedModifyInlineStyle(Italic)}>
           <i className="fas fa-italic fa-fw" />
         </button>
         <button
-          className={buttonClasses ++ activeStyle(DraftJs.Strikethrough) ++ "border-l border-gray-400"}
+          className={buttonWithLeftBorderClasses ++ activeStyle(DraftJs.Strikethrough)}
           onClick={_ => curriedModifyInlineStyle(Strikethrough)}>
           <i className="fas fa-strikethrough fa-fw" />
         </button>
@@ -196,51 +197,49 @@ let controls = (state, profile,  handleStateChange, send) => {
        | Markdown.Permissive => <>
         <div className="bg-white border border-gray-400 rounded-t border-b-0 ml-2">
           <button
-            className={buttonClasses ++ activeBlock(DraftJs.Unstyled) ++ activeBlock(DraftJs.Paragraph)}
-            onClick={_ => curriedModifyBlockStyle(Paragraph)}>
-            <i className="fas fa-paragraph fa-fw" />
-          </button>
-          <button
-            className={buttonClasses ++ activeBlock(DraftJs.H1) ++ "border-l border-gray-400"}
+            className={buttonClasses ++ activeBlock(DraftJs.H1)}
             onClick={_ => curriedModifyBlockStyle(H1)}>
             <strong>{ "H1" |> str }</strong>
           </button>
           <button
-            className={buttonClasses ++ activeBlock(DraftJs.H2) ++ "border-l border-gray-400"}
+            className={buttonWithLeftBorderClasses ++ activeBlock(DraftJs.H2)}
             onClick={_ => curriedModifyBlockStyle(H2)}>
             <strong>{ "H2" |> str }</strong>
           </button>
           <button
-            className={buttonClasses ++ activeBlock(DraftJs.H3) ++ "border-l border-gray-400"}
+            className={buttonWithLeftBorderClasses ++ activeBlock(DraftJs.H3)}
             onClick={_ => curriedModifyBlockStyle(H3)}>
             <strong>{ "H3" |> str }</strong>
           </button>
           <button
-            className={buttonClasses ++ activeLink(inLinkEditMode) ++ "border-l border-gray-400"}
+            className={buttonWithLeftBorderClasses ++ activeLink(inLinkEditMode)}
             onClick={_ => editLink(state, send)}>
             <i className="fas fa-link fa-fw" />
           </button>
           <button
-            className={buttonClasses ++ activeBlock(DraftJs.Blockquote) ++ "border-l border-gray-400"}
+            className={buttonWithLeftBorderClasses ++ activeBlock(DraftJs.Blockquote)}
             onClick={_ => curriedModifyBlockStyle(Blockquote)}>
             <i className="fas fa-quote-right fa-fw" />
           </button>
           <button
-            className={buttonClasses ++ activeBlock(DraftJs.CodeBlock) ++ "border-l border-gray-400"}
+            className={buttonWithLeftBorderClasses ++ activeBlock(DraftJs.CodeBlock)}
             onClick={_ => curriedModifyBlockStyle(CodeBlock)}>
             <i className="fas fa-code fa-fw" />
           </button>
-        </div>
-        <div className="bg-white border border-gray-400 rounded-t border-b-0 ml-2">
           <button
-            className={buttonClasses ++ activeBlock(DraftJs.UL)}
+            className={buttonWithLeftBorderClasses ++ activeBlock(DraftJs.UL)}
             onClick={_ => curriedModifyBlockStyle(UL)}>
             <i className="fas fa-list-ul fa-fw" />
           </button>
           <button
-            className={buttonClasses ++ activeBlock(DraftJs.OL) ++ "border-l border-gray-400"}
+            className={buttonWithLeftBorderClasses ++ activeBlock(DraftJs.OL)}
             onClick={_ => curriedModifyBlockStyle(OL)}>
             <i className="fas fa-list-ol fa-fw" />
+          </button>
+          <button
+            className=buttonWithLeftBorderClasses
+            onClick={_ => curriedModifyBlockStyle(Unstyled)}>
+            <i className="fas fa-remove-format fa-fw" />
           </button>
         </div>
        </>
