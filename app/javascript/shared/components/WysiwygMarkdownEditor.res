@@ -109,11 +109,20 @@ let editLink = (state, send) => {
   send(NewLink({text: "", url: ""}))
 }
 
+let sanitizeUrl = (url: string) => {
+  let validUrl = %re("/https?:\/\/.*/i")
+  switch Js.Re.test_(validUrl, url) {
+  | true  => url
+  | false => "http://" ++ url
+  }
+}
+
 let addLink = (state, send, handleStateChange) => {
   let { editorState, linkState } = state
   switch linkState {
   | Some({text, url}) => {
       url
+      |> sanitizeUrl
       |> DraftJs.EditorState.insertLink(editorState, text)
       |> handleStateChange
       send(CloseLink)
