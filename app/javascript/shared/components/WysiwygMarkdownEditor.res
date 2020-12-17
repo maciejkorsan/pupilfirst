@@ -21,16 +21,25 @@ type mode =
   | Fullscreen
   | Windowed
 
+type linkState = {
+  text: string,
+  url: string
+}
+
 type state = {
   id: string,
   mode: mode,
   editorState: DraftJs.EditorState.t,
+  linkState: option<linkState>,
 }
 
 type action =
   | ClickFullscreen
   | PressEscapeKey
   | SetEditorState(DraftJs.EditorState.t)
+  | NewLink(linkState)
+  | CloseLink
+  | UpdateLink(linkState)
 
 let reducer = (state, action) =>
   switch action {
@@ -48,6 +57,9 @@ let reducer = (state, action) =>
     }
     {...state, mode: mode}
   | SetEditorState(editorState) => {...state, editorState: editorState}
+  | NewLink(linkState) => {...state, linkState: Some(linkState)}
+  | CloseLink => {...state, linkState: None}
+  | UpdateLink(linkState) => {...state, linkState: Some(linkState)}
   }
 
 let computeInitialState = ((value, textareaId, mode)) => {
@@ -58,7 +70,7 @@ let computeInitialState = ((value, textareaId, mode)) => {
 
   let editorState = markdownToEditorState(value)
 
-  {id: id, mode: mode, editorState: editorState}
+  {id: id, mode: mode, editorState: editorState, linkState: None}
 }
 
 let containerClasses = mode =>
@@ -93,6 +105,27 @@ let modifyBlockStyle = (editorState, handleStateChange, blockType: DraftJs.block
   handleStateChange(DraftJs.RichUtils.toggleBlockType(editorState, blockType))
 }
 
+let editLink = (state, send) => {
+  send(NewLink({text: "", url: ""}))
+}
+
+let addLink = (state, send, handleStateChange) => {
+  let { editorState, linkState } = state
+  switch linkState {
+  | Some({text, url}) => {
+      url
+      |> DraftJs.EditorState.insertLink(editorState, text)
+      |> handleStateChange
+      send(CloseLink)
+    }
+  | None => ()
+  }
+}
+
+let closeLink = (send) => {
+  send(CloseLink)
+}
+
 let controlsContainerClasses = mode =>
   "border bg-gray-100 text-sm px-2 flex justify-between items-end " ++
   switch mode {
@@ -102,12 +135,13 @@ let controlsContainerClasses = mode =>
 
 let controls = (state, profile,  handleStateChange, send) => {
   let buttonClasses = "px-2 py-1 hover:bg-gray-300 hover:text-primary-500 focus:outline-none "
-  let {editorState, mode} = state
+  let {editorState, mode, linkState} = state
   let curriedModifyInlineStyle = modifyInlineStyle(editorState, handleStateChange)
   let curriedModifyBlockStyle  = modifyBlockStyle(editorState, handleStateChange)
 
   let styles = DraftJs.EditorState.getCurrentInlineStyle(editorState)
   let currentBlockType = DraftJs.RichUtils.getCurrentBlockType(editorState)
+  let inLinkEditMode = linkState !== None
 
   let activeStyle = (inlineStyle) => {
     switch DraftJs.DraftInlineStyle.has(styles, inlineStyle) {
@@ -117,6 +151,12 @@ let controls = (state, profile,  handleStateChange, send) => {
   }
   let activeBlock = (blockType) => {
     switch currentBlockType == Some(blockType) {
+    | true  => "bg-gray-200 "
+    | false => ""
+    }
+  }
+  let activeLink = (inEditMode) => {
+    switch inEditMode || DraftJs.RichUtils.currentBlockContainsLink(editorState) {
     | true  => "bg-gray-200 "
     | false => ""
     }
@@ -163,6 +203,11 @@ let controls = (state, profile,  handleStateChange, send) => {
             className={buttonClasses ++ activeBlock(DraftJs.H3) ++ "border-l border-gray-400"}
             onClick={_ => curriedModifyBlockStyle(H3)}>
             <strong>{ "H3" |> str }</strong>
+          </button>
+          <button
+            className={buttonClasses ++ activeLink(inLinkEditMode) ++ "border-l border-gray-400"}
+            onClick={_ => editLink(state, send)}>
+            <i className="fas fa-link fa-fw" />
           </button>
           <button
             className={buttonClasses ++ activeBlock(DraftJs.Blockquote) ++ "border-l border-gray-400"}
@@ -225,6 +270,46 @@ let focusOnEditor = id => {
   |> Document.getElementById(id)
   |> OptionUtils.flatMap(HtmlElement.ofElement)
   |> OptionUtils.mapWithDefault(element => element |> HtmlElement.focus, ())
+}
+
+let linkEditorContainerClasses = mode =>
+  "py-2 pr-2 border bg-gray-100 flex justify-end items-center " ++
+  switch mode {
+  | Windowed => "rounded-b border-gray-400"
+  | Fullscreen => "border-gray-400"
+  }
+
+let linkEditor = (link, state, send, handleStateChange) => {
+  let buttonClasses = "px-2 py-1 hover:bg-gray-300 hover:text-primary-500 focus:outline-none "
+  let inputClasses = "appearance-none block w-full bg-white text-gray-900 font-semibold border border-gray-400 rounded py-1 px-1 mx-2 leading-tight focus:outline-none focus:border-gray-500"
+  <div className={linkEditorContainerClasses(state.mode)}>
+    <input
+      onChange={event =>
+        send(UpdateLink({url: link.url, text: ReactEvent.Form.target(event)["value"]}))}
+      value=link.text
+      placeholder="Description"
+      className=inputClasses
+      type_="text"
+    />
+    <input
+      onChange={event =>
+        send(UpdateLink({text: link.text, url: ReactEvent.Form.target(event)["value"]}))}
+      value=link.url
+      placeholder="Url address"
+      className=inputClasses
+      type_="text"
+    />
+    <button
+      className=buttonClasses
+      onClick={_ => addLink(state, send, handleStateChange)}>
+      <i className="fas fa-check fa-fw" />
+    </button>
+    <button
+      className={buttonClasses ++ "border-l border-gray-400"}
+      onClick={_ => closeLink(send)}>
+      <i className="fas fa-times fa-fw" />
+    </button>
+  </div>
 }
 
 let footerContainerClasses = mode =>
@@ -330,6 +415,10 @@ let make = (
 
   <div className={containerClasses(state.mode)}>
     {controls(state, profile, handleStateChange, send)}
+    {switch state.linkState {
+    | Some(link) => linkEditor(link, state, send, handleStateChange)
+    | _ => React.null
+    }}
     <div className={modeClasses(state.mode)}>
       <div className={editorContainerClasses(state.mode)}>
         <div className={MarkdownBlock.markdownBlockClasses(profile, Some(textareaClasses(state.mode)))}>
