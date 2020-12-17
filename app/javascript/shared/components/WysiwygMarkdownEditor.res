@@ -106,22 +106,8 @@ let modifyBlockStyle = (editorState, handleStateChange, blockType: DraftJs.block
 }
 
 let emptyLink = NewLink({text: "", url: ""})
-let link = (text: string, url: string) => NewLink({text: text, url: url})
-let extractLink = (entity) => {
-  switch DraftJs.DraftEntityInstance.getType(entity) {
-  | "LINK" => {
-      let data = DraftJs.DraftEntityInstance.getData(entity)
-      link("hell yeah", data.url)
-    }
-  | _ => emptyLink
-  }
-}
 let editLink = (state, send) => {
-  let currentEntity = DraftJs.Editor.Utils.getCurrentEntity(state.editorState)
-  switch currentEntity {
-  | Some(entity) => extractLink(entity)
-  | None => emptyLink
-  }
+  emptyLink
   |> send
 }
 
