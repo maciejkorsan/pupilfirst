@@ -76,11 +76,13 @@ module ContentBlock = {
 
   @bs.send external findEntityRanges: (t, 'a, 'a) => unit = "findEntityRanges"
   let findEntityRanges = (block: t, filterFn, callback) => findEntityRanges(block, filterFn, callback)
+
+  @bs.send external getEntityAt: (t, int) => Js.Nullable.t<string> = "getEntityAt"
+  let getEntityAt = (block: t, offset: int) => getEntityAt(block, offset)->Js.Nullable.toOption
 }
 
 module DraftEntityInstance = {
   type t = Js.t<{.}>
-
   type data = {
     url: string,
   }
@@ -89,18 +91,26 @@ module DraftEntityInstance = {
   let getData = (entity: t) => getData(entity)
 
   @bs.send external getType: (t) => string = "getType"
-  let getType = (block: t) => getType(block)
+  let getType = (entity: t) => getType(entity)
 }
 
 module CharacterMetadata = {
   type t = Js.t<{.}>
 
   @bs.send external getEntity: (t) => Js.Nullable.t<string> = "getEntity"
-  let getEntity = (state: t) => getEntity(state)
+  let getEntity = (state: t) => getEntity(state)->Js.Nullable.toOption
 }
 
 module SelectionState = {
-  type t = Js.t<{.}>
+  type t = {
+    anchorKey: string,
+    anchorOffset: int,
+    focusKey: string,
+    focusOffset: int,
+    isBackward: bool,
+    hasFocus: bool,
+  }
+
   @bs.module("draft-js") @bs.new external create: 'a => t = "SelectionState"
 
   @bs.send external getStartKey: (t) => string = "getStartKey"
@@ -284,6 +294,27 @@ module Plugins = {
 }
 
 module Editor = {
+  module Utils = {
+    let getCurrentEntityKey = (state: EditorState.t) => {
+      let selection = EditorState.getSelection(state)
+      let anchorKey = SelectionState.getAnchorKey(selection)
+      let contentState = EditorState.getCurrentContent(state)
+      let anchorBlock = ContentState.getBlockForKey(contentState, anchorKey)
+      let offset = selection.anchorOffset
+      let index = selection.isBackward ? offset - 1 : offset
+      ContentBlock.getEntityAt(anchorBlock, index)
+    }
+
+    let getCurrentEntity = (state: EditorState.t) => {
+      let contentState = EditorState.getCurrentContent(state)
+      let entityKey = getCurrentEntityKey(state)
+      switch entityKey {
+      | Some(key) => Some(ContentState.getEntity(contentState, key))
+      | None => None
+      }
+    }
+  }
+
   module JsEditor = {
     @bs.module("draft-js-plugins-editor") @react.component
     external make: (

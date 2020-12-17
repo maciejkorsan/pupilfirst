@@ -105,8 +105,24 @@ let modifyBlockStyle = (editorState, handleStateChange, blockType: DraftJs.block
   handleStateChange(DraftJs.RichUtils.toggleBlockType(editorState, blockType))
 }
 
+let emptyLink = NewLink({text: "", url: ""})
+let link = (text: string, url: string) => NewLink({text: text, url: url})
+let extractLink = (entity) => {
+  switch DraftJs.DraftEntityInstance.getType(entity) {
+  | "LINK" => {
+      let data = DraftJs.DraftEntityInstance.getData(entity)
+      link("hell yeah", data.url)
+    }
+  | _ => emptyLink
+  }
+}
 let editLink = (state, send) => {
-  send(NewLink({text: "", url: ""}))
+  let currentEntity = DraftJs.Editor.Utils.getCurrentEntity(state.editorState)
+  switch currentEntity {
+  | Some(entity) => extractLink(entity)
+  | None => emptyLink
+  }
+  |> send
 }
 
 let sanitizeUrl = (url: string) => {
