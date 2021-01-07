@@ -267,6 +267,7 @@ module Markdown = {
     },
     "remarkablePreset": "commonmark",
     "remarkableOptions": {
+      "preserveNewlines": "true",
       "enable": {
         "core":  ["abbr"],
         "block": "table",
