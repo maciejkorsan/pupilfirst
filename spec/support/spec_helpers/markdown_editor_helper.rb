@@ -4,7 +4,7 @@ module MarkdownEditorHelper
   end
 
   def add_markdown(markdown, replace: false, id: nil)
-    editor = id.present? ? find('#' + id) : find("textarea[aria-label='Markdown editor']")
+    editor = id.present? ? find('#' + id) : find("div[aria-label='Markdown editor']")
     editor.click
 
     if replace

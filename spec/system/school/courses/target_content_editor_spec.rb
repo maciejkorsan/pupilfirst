@@ -33,7 +33,7 @@ feature 'Target Content Editor', js: true do
       find('p', text: 'Markdown').click
     end
 
-    expect(page).to have_selector('textarea[aria-label="Markdown editor"]')
+    expect(page).to have_selector('div[aria-label="Markdown editor"]')
     expect(target.current_target_version.content_blocks.count).to eq(2)
 
     cb = ContentBlock.last
@@ -68,7 +68,7 @@ feature 'Target Content Editor', js: true do
 
     expect(page).not_to have_selector("button[title='Save Changes']")
     expect(page).not_to have_selector("button[title='Undo Changes']")
-    expect(page).to have_selector('textarea', text: first_sentence)
+    expect(page).to have_selector('div[aria-label="Markdown editor"]', text: first_sentence)
 
     second_sentence = "\n\n" + Faker::Lorem.sentence
     add_markdown(second_sentence)
@@ -419,7 +419,7 @@ feature 'Target Content Editor', js: true do
       find('p', text: 'Markdown').click
     end
 
-    expect(page).to have_selector('textarea[aria-label="Markdown editor"]')
+    expect(page).to have_selector('div[aria-label="Markdown editor"]')
     expect(ContentBlock.order(created_at: :desc).first.content).to eq('markdown' => '')
 
     window = window_opened_by { click_link 'View as Student' }
