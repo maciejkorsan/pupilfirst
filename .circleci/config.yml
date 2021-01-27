@@ -68,7 +68,8 @@ jobs:
           name: Test
           command: |
             mkdir -p /tmp/test-results/rspec
-            TESTFILES=$(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+            # TESTFILES=$(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+            TESTFILES=$(circleci tests glob "spec/system/targets/submission_builder_spec.rb" "spec/system/targets/submission_builder_spec.rb" "spec/system/school/coaches_index_spec.rb" | circleci tests split --split-by=timings)
             bin/rspec $TESTFILES --profile 10 --format RspecJunitFormatter --out /tmp/test-results/rspec/results.xml --format progress
           environment:
             DATABASE_URL: "postgres://postgres:password@localhost:5432/gt_pupilfirst_test"
