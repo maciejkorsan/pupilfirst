@@ -127,5 +127,30 @@ describe Courses::AddStudentsService do
         expect(current_email).to eq(nil)
       end
     end
+
+    context 'notification is enabled' do
+      let(:notify) { true }
+      let(:school) { course.school }
+
+      it 'send email to user set his first password' do
+        service = double('Users::MailFirstPasswordTokenService')
+        allow(Users::MailFirstPasswordTokenService).to receive(:new) { service }
+        expect(service).to receive(:execute)
+
+        subject.add([student_1_data])
+      end
+
+      it 'send welcome email' do
+        school.users.create!(name: student_1_data[:name],
+                             email: student_1_data[:email],
+                             password: 'test')
+
+        mailer = double('StudentMailer')
+        expect(StudentMailer).to receive(:enrollment) { mailer }
+        expect(mailer).to receive(:deliver_later)
+
+        subject.add([student_1_data])
+      end
+    end
   end
 end
