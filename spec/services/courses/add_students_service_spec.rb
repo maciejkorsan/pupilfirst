@@ -134,20 +134,16 @@ describe Courses::AddStudentsService do
 
       it 'send email to user set his first password' do
         service = instance_double('Users::MailFirstPasswordTokenService')
-        allow(Users::MailFirstPasswordTokenService).to receive(:new) { service }
+        expect(Users::MailFirstPasswordTokenService).to receive(:new).with(school, having_attributes(student_1_data.to_h)) { service }
         expect(service).to receive(:execute)
 
         subject.add([student_1_data])
       end
 
       it 'send welcome email' do
-        student = school.users.create!(name: student_1_data[:name],
-                             email: student_1_data[:email],
-                             password: 'test')
+        user = create :user, name: student_1_data[:name], email: student_1_data[:email], password: 'test'
 
-        mailer = instance_double('StudentMailer')
-        expect(StudentMailer).to receive(:enrollment).with(student) { mailer }
-        expect(mailer).to receive(:deliver_later)
+        expect(StudentMailer).to receive(:enrollment).twice.with(having_attributes(user: user)).and_call_original
 
         subject.add([student_1_data])
       end
