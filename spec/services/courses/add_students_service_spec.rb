@@ -133,7 +133,7 @@ describe Courses::AddStudentsService do
       let(:school) { course.school }
 
       it 'send email to user set his first password' do
-        service = double('Users::MailFirstPasswordTokenService')
+        service = instance_double('Users::MailFirstPasswordTokenService')
         allow(Users::MailFirstPasswordTokenService).to receive(:new) { service }
         expect(service).to receive(:execute)
 
@@ -141,12 +141,12 @@ describe Courses::AddStudentsService do
       end
 
       it 'send welcome email' do
-        school.users.create!(name: student_1_data[:name],
+        student = school.users.create!(name: student_1_data[:name],
                              email: student_1_data[:email],
                              password: 'test')
 
-        mailer = double('StudentMailer')
-        expect(StudentMailer).to receive(:enrollment) { mailer }
+        mailer = instance_double('StudentMailer')
+        expect(StudentMailer).to receive(:enrollment).with(student) { mailer }
         expect(mailer).to receive(:deliver_later)
 
         subject.add([student_1_data])
