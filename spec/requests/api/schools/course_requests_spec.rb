@@ -38,6 +38,10 @@ module Api
 
           get '/api/schools/courses', headers: headers
 
+          p response.status
+          p response.headers
+          p response.body
+
           expect(response).to have_http_status(:ok)
           expect(response.body).to eq(courses.to_json)
         end
@@ -88,7 +92,7 @@ module Api
               {name: 'Test2', email: 'test2@test.com'}
             ]
           }
-          form = Students::CreateForm.new(Reform::OpenForm.new) 
+          form = Students::CreateForm.new(Reform::OpenForm.new)
           allow(Students::CreateForm).to receive(:new) { form }
           expect(::Courses::AddStudentsService).to receive(:new).with(course, hash_including(notify: true)) { form }
           post "/api/schools/courses/#{course.id}/students", params: params, headers: headers
