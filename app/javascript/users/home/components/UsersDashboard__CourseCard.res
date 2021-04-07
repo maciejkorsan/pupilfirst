@@ -120,7 +120,7 @@ let make = (
   <div
     key={course->Course.id}
     ariaLabel={course->Course.name}
-    className="w-full px-3 lg:px-5 md:w-1/2 mt-6 md:mt-10">
+    className="course-card">
     <div
       key={course->Course.id}
       className="flex overflow-hidden shadow bg-white rounded-lg flex flex-col justify-between h-full">
