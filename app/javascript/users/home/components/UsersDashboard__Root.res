@@ -181,6 +181,50 @@ let courseLinks = (course, currentSchoolAdmin, communities) => {
   </div>
 }
 
+let courseCard = (course, communities, currentSchoolAdmin) =>
+  <div
+    key={course->Course.id}
+    ariaLabel={course->Course.name}
+    className="w-full px-3 lg:px-5 md:w-1/2 mt-6 md:mt-10">
+    <div
+      key={course->Course.id}
+      className="flex overflow-hidden shadow bg-white rounded-lg flex flex-col justify-between h-full">
+      <div>
+        <div className="relative">
+          <div className="relative pb-1/2 bg-gray-800">
+            {switch course->Course.thumbnailUrl {
+            | Some(url) => <img className="absolute h-full w-full object-cover" src=url />
+            | None =>
+              <div
+                className="user-dashboard-course__cover absolute h-full w-full svg-bg-pattern-1"
+              />
+            }}
+          </div>
+          <div
+            className="user-dashboard-course__title-container absolute w-full flex items-center h-16 bottom-0 z-50"
+            key={course->Course.id}>
+            <h4
+              className="user-dashboard-course__title text-white font-semibold leading-tight pl-6 pr-4 text-lg md:text-xl">
+              {Course.name(course)->str}
+            </h4>
+          </div>
+        </div>
+        <div
+          className="user-dashboard-course__description text-sm px-6 pt-4 w-full leading-relaxed">
+          {Course.description(course)->str}
+        </div>
+        {if course->Course.exited && (!(course->Course.review) && !(course->Course.author)) {
+          <div className="text-sm py-4 bg-red-100 rounded mt-2 px-6">
+            {t("course_locked_message")->str}
+          </div>
+        } else {
+          <div> {courseLinks(course, currentSchoolAdmin, communities)} </div>
+        }}
+      </div>
+      <div> {ctaFooter(course, currentSchoolAdmin)} </div>
+    </div>
+  </div>
+
 let coursesSection = (courses, communities, currentSchoolAdmin) =>
   <div className="w-full max-w-4xl mx-auto">
     {ReactUtils.nullUnless(
@@ -193,50 +237,9 @@ let coursesSection = (courses, communities, currentSchoolAdmin) =>
       </div>,
       ArrayUtils.isEmpty(courses),
     )}
-    <div className="flex flex-wrap flex-1 lg:-mx-5"> {Js.Array.map(course =>
-        <div
-          key={course->Course.id}
-          ariaLabel={course->Course.name}
-          className="w-full px-3 lg:px-5 md:w-1/2 mt-6 md:mt-10">
-          <div
-            key={course->Course.id}
-            className="flex overflow-hidden shadow bg-white rounded-lg flex flex-col justify-between h-full">
-            <div>
-              <div className="relative">
-                <div className="relative pb-1/2 bg-gray-800">
-                  {switch course->Course.thumbnailUrl {
-                  | Some(url) => <img className="absolute h-full w-full object-cover" src=url />
-                  | None =>
-                    <div
-                      className="user-dashboard-course__cover absolute h-full w-full svg-bg-pattern-1"
-                    />
-                  }}
-                </div>
-                <div
-                  className="user-dashboard-course__title-container absolute w-full flex items-center h-16 bottom-0 z-50"
-                  key={course->Course.id}>
-                  <h4
-                    className="user-dashboard-course__title text-white font-semibold leading-tight pl-6 pr-4 text-lg md:text-xl">
-                    {Course.name(course)->str}
-                  </h4>
-                </div>
-              </div>
-              <div
-                className="user-dashboard-course__description text-sm px-6 pt-4 w-full leading-relaxed">
-                {Course.description(course)->str}
-              </div>
-              {if course->Course.exited && (!(course->Course.review) && !(course->Course.author)) {
-                <div className="text-sm py-4 bg-red-100 rounded mt-2 px-6">
-                  {t("course_locked_message")->str}
-                </div>
-              } else {
-                <div> {courseLinks(course, currentSchoolAdmin, communities)} </div>
-              }}
-            </div>
-            <div> {ctaFooter(course, currentSchoolAdmin)} </div>
-          </div>
-        </div>
-      , courses)->React.array} </div>
+    <div className="flex flex-wrap flex-1 lg:-mx-5">
+      {Js.Array.map(course => courseCard(course, communities, currentSchoolAdmin), courses)->React.array}
+    </div>
   </div>
 
 let communitiesSection = communities =>
