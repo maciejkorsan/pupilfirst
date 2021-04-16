@@ -1,6 +1,8 @@
-module.exports = {
-  courseCard: (theme) => {
-    return {
+const plugin = require('tailwindcss/plugin');
+
+module.exports = plugin(
+  function courseCard({ addComponents, theme }) {
+    addComponents({
       '.course-card': {
         width: theme('width.full'),
         marginTop: theme('margin.6'),
@@ -16,7 +18,7 @@ module.exports = {
           paddingLeft: theme('padding.5'),
           paddingRight: theme('padding.5'),
         },
-      }
-    }
+      },
+    });
   }
-};
+);

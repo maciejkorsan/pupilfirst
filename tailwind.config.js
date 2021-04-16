@@ -1,12 +1,3 @@
-const plugin = require('tailwindcss/plugin')
-
-const courseCard = require("./app/javascript/users/home/components/UsersDashboard__CourseCard.css");
-const components = (theme) => {
-  return {
-    ...courseCard(theme),
-  }
-};
-
 module.exports = {
   variants: {
     extend: {
@@ -132,9 +123,7 @@ module.exports = {
         // => @media (min-width: 1824px) { ... }
       },
       plugins: [
-        plugin(function({ addComponents, theme }) {
-          addComponents(components(theme));
-        })
+        require("./app/javascript/users/home/components/UsersDashboard__CourseCard.css"),
       ],
     }
   },
