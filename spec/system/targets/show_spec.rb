@@ -72,7 +72,7 @@ feature 'Target Overlay', js: true do
     ## Ensure different components of the overlay display the appropriate details.
 
     # Header should have the title and the status of the current status of the target.
-    within('.course-overlay__header-title-card') do
+    within('#overlayHeaderTitle') do
       expect(page).to have_content(target_l1.title)
     end
 
@@ -112,7 +112,7 @@ feature 'Target Overlay', js: true do
     dismiss_notification
 
     # The state of the target should change.
-    within('.course-overlay__header-title-card') do
+    within('#overlayHeaderTitle') do
       expect(page).to have_content('Pending Review')
     end
 
@@ -192,7 +192,7 @@ feature 'Target Overlay', js: true do
       expect(page).to have_selector('.complete-button-selected', text: 'Completed')
 
       # The target should be marked as passed.
-      expect(page).to have_selector('.course-overlay__header-title-card', text: 'Completed')
+      expect(page).to have_selector('#overlayHeaderTitle', text: 'Completed')
 
       # Since this is a team target, other students shouldn't be listed as pending.
       expect(page).not_to have_content('You have team members who are yet to complete this lesson')
@@ -233,7 +233,7 @@ feature 'Target Overlay', js: true do
         end
 
         # Target should now be complete for the user.
-        expect(page).to have_selector('.course-overlay__header-title-card', text: 'Completed')
+        expect(page).to have_selector('#overlayHeaderTitle', text: 'Completed')
 
         # Target should have been marked as passed in the database.
         expect(target_with_link.status(student)).to eq(Targets::StatusService::STATUS_PASSED)
@@ -245,7 +245,7 @@ feature 'Target Overlay', js: true do
 
       sign_in_user student.user, referrer: target_path(quiz_target)
 
-      within('.course-overlay__header-title-card') do
+      within('#overlayHeaderTitle') do
         expect(page).to have_content(quiz_target.title)
       end
 
@@ -274,7 +274,7 @@ feature 'Target Overlay', js: true do
       expect(page).to have_content('Your responses have been saved')
       expect(page).to have_selector('.course-overlay__body-tab-item', text: 'Quiz Result')
 
-      within('.course-overlay__header-title-card') do
+      within('#overlayHeaderTitle') do
         expect(page).to have_content(quiz_target.title)
         expect(page).to have_content('Completed')
       end
@@ -433,7 +433,7 @@ feature 'Target Overlay', js: true do
     scenario 'student navigates to a prerequisite target' do
       sign_in_user student.user, referrer: target_path(target_l1)
 
-      within('.course-overlay__header-title-card') do
+      within('#overlayHeaderTitle') do
         expect(page).to have_content('Locked')
       end
 
@@ -444,7 +444,7 @@ feature 'Target Overlay', js: true do
         find('span', text: prerequisite_target.title).click
       end
 
-      within('.course-overlay__header-title-card') do
+      within('#overlayHeaderTitle') do
         expect(page).to have_content(prerequisite_target.title)
       end
 
@@ -460,7 +460,7 @@ feature 'Target Overlay', js: true do
     scenario 'student visits a pending target' do
       sign_in_user student.user, referrer: target_path(target_l1)
 
-      within('.course-overlay__header-title-card') do
+      within('#overlayHeaderTitle') do
         expect(page).to have_content(target_l1.title)
         expect(page).to have_content('Locked')
       end
@@ -476,7 +476,7 @@ feature 'Target Overlay', js: true do
       sign_in_user student.user, referrer: target_path(target_l1)
 
       # The status should read locked.
-      within('.course-overlay__header-title-card') do
+      within('#overlayHeaderTitle') do
         expect(page).to have_content(target_l1.title)
         expect(page).to have_content('Locked')
       end
@@ -500,7 +500,7 @@ feature 'Target Overlay', js: true do
     scenario 'student visits a target in a course where their access has ended' do
       sign_in_user student.user, referrer: target_path(target_l1)
 
-      within('.course-overlay__header-title-card') do
+      within('#overlayHeaderTitle') do
         expect(page).to have_content(target_l1.title)
         expect(page).to have_content('Locked')
       end
@@ -662,7 +662,7 @@ feature 'Target Overlay', js: true do
       scenario 'user can view all the questions' do
         sign_in_user school_admin.user, referrer: target_path(quiz_target)
 
-        within('.course-overlay__header-title-card') do
+        within('#overlayHeaderTitle') do
           expect(page).to have_content(quiz_target.title)
         end
 
