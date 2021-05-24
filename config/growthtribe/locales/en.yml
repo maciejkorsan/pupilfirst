@@ -58,6 +58,7 @@ en:
         more: More
         coaching_session: Coaching Session
         pdf_document: PDF document
+        community_widget: Community Widget
     CurriculumEditor__TargetGroupShow:
       create_target: Create a lesson
       milestone_targets: Milestone Lessons
@@ -92,6 +93,7 @@ en:
       linked_target_label: "Linked Lesson: "
       view_target_button: View Lesson
     CoursesCurriculum__Overlay:
+      completion_tab_complete: Exercise
       pending_team_members_notice: "You have team members who are yet to complete this lesson:"
       previous_target_button: Previous Lesson
       next_target_button: Next Lesson
